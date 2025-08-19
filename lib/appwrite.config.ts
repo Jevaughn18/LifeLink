@@ -13,7 +13,13 @@ export const {
 
 const client = new sdk.Client();
 
-client.setEndpoint(ENDPOINT!).setProject(PROJECT_ID!).setKey(API_KEY!);
+// Ensure ENDPOINT is not undefined
+if (!ENDPOINT) throw new Error("NEXT_PUBLIC_ENDPOINT is not defined in .env");
+
+client
+  .setEndpoint(ENDPOINT) // must be your Appwrite API endpoint
+  .setProject(PROJECT_ID!)
+  .setKey(API_KEY!);
 
 export const databases = new sdk.Databases(client);
 export const users = new sdk.Users(client);
