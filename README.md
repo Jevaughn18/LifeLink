@@ -2,8 +2,6 @@
 
 A healthcare patient management application that allows patients to easily register, book, and manage their appointments with doctors, featuring administrative tools for scheduling, confirming, and canceling appointments, along with SMS notifications, all built using Next.js.
 
-If you're getting started and need assistance or face any bugs, join our active Discord community with over 34k+ members. It's a place where people help each other out.
-
 ⚙️ Tech Stack
 Next.js
 Appwrite
@@ -45,8 +43,8 @@ Node.js
 npm (Node Package Manager)
 Cloning the Repository
 
-git clone https://github.com/adrianhajdin/healthcare.git
-cd healthcare
+git clone git@github.com:Jevaughn18/LifeLink.git
+cd lifelink
 Installation
 
 Install the project dependencies using npm:
@@ -72,17 +70,6 @@ Running the Project
 
 npm run dev
 Open http://localhost:3000 in your browser to view the project.
-
-🕸️ Snippets
-tailwind.config.ts
-app/globals.css
-types/index.d.ts
-types/appwrite.types.ts
-lib/utils.ts
-lib/validation.ts
-constants/index.ts
-🔗 Assets
-Public assets used in the project can be found here
 
 
 👨‍💻 Author
