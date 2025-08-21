@@ -1,9 +1,8 @@
-🤖 Introduction
+📖 Overview
+
 A healthcare patient management application that allows patients to easily register, book, and manage their appointments with doctors, featuring administrative tools for scheduling, confirming, and canceling appointments, along with SMS notifications, all built using Next.js.
 
 If you're getting started and need assistance or face any bugs, join our active Discord community with over 34k+ members. It's a place where people help each other out.
-
-
 
 ⚙️ Tech Stack
 Next.js
@@ -12,6 +11,7 @@ Typescript
 TailwindCSS
 ShadCN
 Twilio
+
 🔋 Features
 👉 Register as a Patient: Users can sign up and create a personal profile as a patient.
 
@@ -84,82 +84,12 @@ constants/index.ts
 🔗 Assets
 Public assets used in the project can be found here
 
-🚀 More
-Advance your skills with Next.js 14 Pro Course
-
-Enjoyed creating this project? Dive deeper into our PRO courses for a richer learning adventure. They're packed with detailed explanations, cool features, and exercises to boost your skills. Give it a go!
-# Project Title
-📌 Life-Link Healthcare Platform
-
-📖 Overview
-
-Life-Link is a web-based solution designed to streamline healthcare processes in Jamaica by:
-
-🔴 Eliminating long lines at hospitals and clinics
-
-🔴 Simplifying patient registration and appointment scheduling
-
-🔴 Maintaining digital medical records
-
-🔴 Providing real-time SMS notifications for appointment status updates
-
-🔴 The platform is built with modern web technologies and integrates Twilio for reliable SMS communication between healthcare providers and patients.
-
-----
-
-Features
-
-👤 Patient Registration – Secure onboarding for new patients
-
-🗓️ Appointment Scheduling – Patients can book and reschedule appointments online
-
-📂 Medical Records – Centralized database for healthcare history
-
-📲 SMS Notifications (via Twilio) – Automated text updates when:
-
-Appointments are approved ✅
-
-Rescheduled 🔄
-
-Canceled ❌
-
-🔐 Role-based Access Control – Admins, doctors, and patients have different levels of access
-
-🛠️ Tech Stack
-
-Backend: Node.js, Express
-
-Database: Appwrite
-
-Frontend: React
-
-Messaging: Twilio Programmable SMS
-
-Hosting: TBD (Heroku / AWS / DigitalOcean)
-
-📡 Twilio Integration
-
-Twilio is used to send transactional SMS updates:
-
-When an admin approves or declines an appointment, the patient receives an SMS update.
-
-Patients get reminders about upcoming appointments.
-
-SMS ensures accessibility for patients who may not always have internet access.
-
-Example SMS flow:
-
-"Hello [Patient Name], your appointment for [Date/Time] has been approved at [Clinic/Hospital Name]."
-
-📷 Screenshots / Demo
-
-
 
 👨‍💻 Author
 
 Name: Jevaughn Stewart
 
-Role: Software/API Developer, Computer Networks & Cyber Security (BSc) @ UTech Jamaica
+Role: Software/API Developer/Student, Computer Networks & Cyber Security (BSc) @ UTech Jamaica
 
 LinkedIn: [https://www.linkedin.com/in/jevaughn-stewart-a71bb8294/]
 
