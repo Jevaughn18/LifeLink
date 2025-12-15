@@ -77,6 +77,7 @@ export const PatientFormValidation = z.object({
     .refine((value) => value === true, {
       message: "You must consent to privacy in order to proceed",
     }),
+  sagicorDataSharingConsent: z.boolean().optional().default(false),
 });
 
 export const CreateAppointmentSchema = z.object({

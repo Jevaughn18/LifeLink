@@ -14,7 +14,7 @@ const AdminPage = async () => {
       <header className="admin-header">
         <Link href="/" className="cursor-pointer">
           <Image
-            // src="/assets/icons/logo-full.svg"
+            src="/assets/icons/logo-full.svg"
             height={32}
             width={162}
             alt="logo"
@@ -22,7 +22,15 @@ const AdminPage = async () => {
           />
         </Link>
 
-        <p className="text-16-semibold">Admin Dashboard</p>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/admin/sagicor-insights"
+            className="text-green-500 hover:text-green-400 text-14-medium"
+          >
+            📊 Sagicor Insights
+          </Link>
+          <p className="text-16-semibold">Admin Dashboard</p>
+        </div>
       </header>
 
       <main className="admin-main">

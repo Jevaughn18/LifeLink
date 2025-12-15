@@ -13,6 +13,7 @@ import {
   users,
 } from "../appwrite.config";
 import { parseStringify } from "../utils";
+import { analyzeMedicalHistory } from "../ai/gemini-service";
 
 // CREATE APPWRITE USER
 export const createUser = async (user: CreateUserParams) => {
@@ -60,6 +61,22 @@ export const registerPatient = async ({
   ...patient
 }: RegisterUserParams) => {
   try {
+    // Run AI analysis on medical history
+    let medicalAnalysis = null;
+    if (patient.allergies || patient.currentMedication || patient.familyMedicalHistory || patient.pastMedicalHistory) {
+      try {
+        medicalAnalysis = await analyzeMedicalHistory(
+          patient.allergies,
+          patient.currentMedication,
+          patient.familyMedicalHistory,
+          patient.pastMedicalHistory
+        );
+        console.log('AI Medical History Analysis completed:', medicalAnalysis);
+      } catch (aiError) {
+        console.error('AI medical analysis failed, continuing without it:', aiError);
+      }
+    }
+
     // Upload file ->  // https://appwrite.io/docs/references/cloud/client-web/storage#createFile
     let file;
     if (identificationDocument) {
@@ -84,6 +101,8 @@ export const registerPatient = async ({
           ? `${ENDPOINT}/storage/buckets/${BUCKET_ID}/files/${file.$id}/view??project=${PROJECT_ID}`
           : null,
         ...patient,
+        aiMedicalAnalysis: medicalAnalysis ? JSON.stringify(medicalAnalysis) : undefined,
+        sagicorConsentDate: (patient as any).sagicorDataSharingConsent ? new Date().toISOString() : undefined,
       }
     );
 

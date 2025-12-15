@@ -22,6 +22,10 @@ export interface Patient extends Models.Document {
   identificationNumber: string | undefined;
   identificationDocument: FormData | undefined;
   privacyConsent: boolean;
+  // AI Analysis fields
+  aiMedicalAnalysis?: string; // JSON stringified MedicalHistoryAnalysis
+  sagicorDataSharingConsent?: boolean;
+  sagicorConsentDate?: Date;
 }
 
 export interface Appointment extends Models.Document {
@@ -33,4 +37,10 @@ export interface Appointment extends Models.Document {
   note: string;
   userId: string;
   cancellationReason: string | null;
+  // AI Analysis fields
+  aiSymptomAnalysis?: string; // JSON stringified SymptomAnalysisResult
+  aiReviewedBy?: string;
+  aiReviewedAt?: Date;
+  aiHumanApproved?: boolean;
+  aiHumanNotes?: string;
 }

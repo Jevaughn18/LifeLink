@@ -2,6 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import Image from "next/image";
+import { useState } from "react";
 
 import { Doctors } from "@/constants";
 import { formatDateTime } from "@/lib/utils";
@@ -9,6 +10,9 @@ import { Appointment } from "@/types/appwrite.types";
 
 import { AppointmentModal } from "../AppointmentModal";
 import { StatusBadge } from "../StatusBadge";
+import { AIReviewModal } from "../AIReviewModal";
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
 
 export const columns: ColumnDef<Appointment>[] = [
   {
@@ -70,6 +74,67 @@ export const columns: ColumnDef<Appointment>[] = [
           />
           <p className="whitespace-nowrap">Dr. {doctor?.name}</p>
         </div>
+      );
+    },
+  },
+  {
+    id: "ai-review",
+    header: "AI Analysis",
+    cell: ({ row }) => {
+      const appointment = row.original;
+      const [reviewOpen, setReviewOpen] = useState(false);
+
+      // Check if appointment has AI analysis
+      if (!appointment.aiSymptomAnalysis) {
+        return <p className="text-14-regular text-gray-500">No AI data</p>;
+      }
+
+      let aiAnalysis: SymptomAnalysisResult | null = null;
+      try {
+        aiAnalysis = JSON.parse(appointment.aiSymptomAnalysis);
+      } catch (e) {
+        return <p className="text-14-regular text-red-500">Error</p>;
+      }
+
+      const getUrgencyColor = (urgency: string) => {
+        switch (urgency) {
+          case "Critical":
+            return "bg-red-600";
+          case "High":
+            return "bg-orange-500";
+          case "Medium":
+            return "bg-yellow-500";
+          case "Low":
+            return "bg-green-500";
+          default:
+            return "bg-gray-500";
+        }
+      };
+
+      return (
+        <>
+          <div className="flex flex-col gap-1">
+            <Badge className={`${getUrgencyColor(aiAnalysis.urgency_level)} w-fit`}>
+              {aiAnalysis.urgency_level}
+            </Badge>
+            {appointment.aiHumanApproved ? (
+              <Badge className="bg-green-600 w-fit">✓ Reviewed</Badge>
+            ) : (
+              <Button
+                size="sm"
+                onClick={() => setReviewOpen(true)}
+                className="shad-primary-btn text-xs h-7"
+              >
+                Review
+              </Button>
+            )}
+          </div>
+          <AIReviewModal
+            appointment={appointment}
+            open={reviewOpen}
+            setOpen={setReviewOpen}
+          />
+        </>
       );
     },
   },
