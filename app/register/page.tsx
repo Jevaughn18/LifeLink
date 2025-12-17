@@ -2,14 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import AuthLayout from "@/components/AuthLayout";
 import InitialRegisterForm from "@/components/forms/InitialRegisterForm";
-import { PasskeyModal } from "@/components/PasskeyModal"; // Keep this if still needed for admin
 
-const Home = ({ searchParams }: SearchParamProps) => {
-  const isAdmin = searchParams?.admin === "true";
-
+const RegisterPage = () => {
   return (
     <AuthLayout>
-      {isAdmin && <PasskeyModal />}
       <div className="sub-container max-w-[496px]">
         <Image
           src="/assets/icons/logo-full.svg"
@@ -28,8 +24,6 @@ const Home = ({ searchParams }: SearchParamProps) => {
           </Link>
         </div>
 
-        {/* Admin link handled by AuthLayout now, or can be kept here if needed specifically for the root */}
-        {/*
         <div className="text-14-regular mt-12 flex justify-between">
           <p className="justify-items-end text-dark-600 xl:text-left">
             © 2025 LifeLynk
@@ -38,11 +32,9 @@ const Home = ({ searchParams }: SearchParamProps) => {
             Admin
           </Link>
         </div>
-        */}
       </div>
     </AuthLayout>
   );
 };
 
-export default Home;
-
+export default RegisterPage;
