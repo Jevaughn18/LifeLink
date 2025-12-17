@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Appointment } from "@/types/appwrite.types";
 import { approveAIAnalysis } from "@/lib/actions/appointment.actions";
 import {
@@ -28,18 +29,14 @@ export const AIReviewModal = ({
   open,
   setOpen,
 }: AIReviewModalProps) => {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [humanNotes, setHumanNotes] = useState("");
 
-  // Parse AI analysis if it exists
-  let aiAnalysis: SymptomAnalysisResult | null = null;
-  if (appointment.aiSymptomAnalysis) {
-    try {
-      aiAnalysis = JSON.parse(appointment.aiSymptomAnalysis);
-    } catch (e) {
-      console.error("Failed to parse AI analysis", e);
-    }
-  }
+  // The AI analysis data is now expected to be a pre-parsed object.
+  const aiAnalysis: SymptomAnalysisResult | null = appointment.aiSymptomAnalysis
+    ? (appointment.aiSymptomAnalysis as SymptomAnalysisResult)
+    : null;
 
   const handleApprove = async (approved: boolean) => {
     setIsLoading(true);
@@ -51,6 +48,7 @@ export const AIReviewModal = ({
         notes: humanNotes || undefined,
       });
       setOpen(false);
+      router.refresh(); // Refresh the page to show updated data
     } catch (error) {
       console.error("Failed to approve AI analysis:", error);
     } finally {
@@ -62,20 +60,6 @@ export const AIReviewModal = ({
     return null;
   }
 
-  const getUrgencyColor = (urgency: string) => {
-    switch (urgency) {
-      case "Critical":
-        return "bg-red-600 text-white";
-      case "High":
-        return "bg-orange-500 text-white";
-      case "Medium":
-        return "bg-yellow-500 text-black";
-      case "Low":
-        return "bg-green-500 text-white";
-      default:
-        return "bg-gray-500 text-white";
-    }
-  };
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
@@ -83,8 +67,12 @@ export const AIReviewModal = ({
         <AlertDialogHeader>
           <AlertDialogTitle className="text-2xl">
             AI Analysis Review
-            {appointment.aiHumanApproved && (
-              <Badge className="ml-2 bg-green-600">Approved</Badge>
+            {appointment.aiReviewedBy && (
+              appointment.aiHumanApproved ? (
+                <Badge className="ml-2 bg-green-600">Approved</Badge>
+              ) : (
+                <Badge className="ml-2 bg-red-600">Rejected</Badge>
+              )
             )}
           </AlertDialogTitle>
           <AlertDialogDescription>
@@ -108,17 +96,10 @@ export const AIReviewModal = ({
               AI-Generated Analysis
             </h3>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <p className="text-xs text-gray-400 mb-1">Symptom Category</p>
                 <Badge className="bg-blue-600">{aiAnalysis.symptom_category}</Badge>
-              </div>
-
-              <div>
-                <p className="text-xs text-gray-400 mb-1">Urgency Level</p>
-                <Badge className={getUrgencyColor(aiAnalysis.urgency_level)}>
-                  {aiAnalysis.urgency_level}
-                </Badge>
               </div>
 
               <div>
@@ -175,19 +156,25 @@ export const AIReviewModal = ({
           )}
 
           {/* Previous Review Info */}
-          {appointment.aiHumanApproved && (
-            <div className="bg-green-900/20 border border-green-600 p-4 rounded">
-              <p className="text-green-200 text-sm">
+          {appointment.aiReviewedBy && (
+            <div className={appointment.aiHumanApproved
+              ? "bg-green-900/20 border border-green-600 p-4 rounded"
+              : "bg-red-900/20 border border-red-600 p-4 rounded"
+            }>
+              <p className={appointment.aiHumanApproved ? "text-green-200 text-sm" : "text-red-200 text-sm"}>
                 <strong>Reviewed by:</strong> {appointment.aiReviewedBy}
               </p>
               {appointment.aiReviewedAt && (
-                <p className="text-green-200 text-sm">
+                <p className={appointment.aiHumanApproved ? "text-green-200 text-sm" : "text-red-200 text-sm"}>
                   <strong>Reviewed at:</strong>{" "}
                   {new Date(appointment.aiReviewedAt).toLocaleString()}
                 </p>
               )}
+              <p className={appointment.aiHumanApproved ? "text-green-200 text-sm" : "text-red-200 text-sm"}>
+                <strong>Status:</strong> {appointment.aiHumanApproved ? "Approved" : "Rejected"}
+              </p>
               {appointment.aiHumanNotes && (
-                <p className="text-green-200 text-sm mt-2">
+                <p className={appointment.aiHumanApproved ? "text-green-200 text-sm mt-2" : "text-red-200 text-sm mt-2"}>
                   <strong>Notes:</strong> {appointment.aiHumanNotes}
                 </p>
               )}
@@ -196,7 +183,7 @@ export const AIReviewModal = ({
         </div>
 
         <AlertDialogFooter>
-          {!appointment.aiHumanApproved ? (
+          {!appointment.aiReviewedBy ? (
             <>
               <AlertDialogCancel disabled={isLoading}>
                 Close

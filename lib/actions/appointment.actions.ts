@@ -1,23 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { ID, Query } from "node-appwrite";
-
-import { Appointment } from "@/types/appwrite.types";
-
-import {
-  APPOINTMENT_COLLECTION_ID,
-  DATABASE_ID,
-  databases,
-  messaging,
-} from "../appwrite.config";
-import { formatDateTime, parseStringify } from "../utils";
+import { query, queryOne, generateId } from "../database/mysql.config";
+import { sendAppointmentScheduledEmail, sendAppointmentCancelledEmail } from "../email/appointment-emails";
 import { analyzeSymptoms } from "../ai/gemini-service";
 
-//  CREATE APPOINTMENT
-export const createAppointment = async (
-  appointment: CreateAppointmentParams
-) => {
+// CREATE APPOINTMENT
+export const createAppointment = async (appointment: CreateAppointmentParams) => {
   try {
     // Run AI analysis on symptoms if reason is provided
     let aiAnalysis = null;
@@ -30,155 +18,187 @@ export const createAppointment = async (
       }
     }
 
-    // Create appointment with AI analysis data
-    const appointmentData = {
-      ...appointment,
-      aiSymptomAnalysis: aiAnalysis ? JSON.stringify(aiAnalysis) : undefined,
-      aiHumanApproved: false, // Requires human review by default
-    };
+    const appointmentId = generateId();
 
-    const newAppointment = await databases.createDocument(
-      DATABASE_ID!,
-      APPOINTMENT_COLLECTION_ID!,
-      ID.unique(),
-      appointmentData
+    await query(
+      `INSERT INTO appointments (
+        id, patient_id, primary_physician, schedule, status, reason, note,
+        ai_symptom_analysis, ai_human_approved
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        appointmentId,
+        appointment.patient,
+        appointment.primaryPhysician,
+        appointment.schedule,
+        appointment.status,
+        appointment.reason,
+        appointment.note || null,
+        aiAnalysis ? JSON.stringify(aiAnalysis) : null,
+        false
+      ]
     );
 
-    revalidatePath("/admin");
-    return parseStringify(newAppointment);
+    const newAppointment = await queryOne<any>(
+      `SELECT a.*,
+        p.id as patient_id, p.name as patient_name, p.email as patient_email, p.phone as patient_phone
+       FROM appointments a
+       JOIN patients p ON a.patient_id = p.id
+       WHERE a.id = ?`,
+      [appointmentId]
+    );
+
+    return formatAppointmentResponse(newAppointment);
   } catch (error) {
     console.error("An error occurred while creating a new appointment:", error);
+    throw error;
   }
 };
 
-//  GET RECENT APPOINTMENTS
+// GET RECENT APPOINTMENTS
 export const getRecentAppointmentList = async () => {
   try {
-    const appointments = await databases.listDocuments(
-      DATABASE_ID!,
-      APPOINTMENT_COLLECTION_ID!,
-      [Query.orderDesc("$createdAt")]
+    const appointments = await query<any>(
+      `SELECT a.*,
+        p.id as patient_id, p.name as patient_name, p.email as patient_email,
+        p.phone as patient_phone, p.insurance_provider
+       FROM appointments a
+       JOIN patients p ON a.patient_id = p.id
+       ORDER BY a.created_at DESC`
     );
 
-    // const scheduledAppointments = (
-    //   appointments.documents as Appointment[]
-    // ).filter((appointment) => appointment.status === "scheduled");
-
-    // const pendingAppointments = (
-    //   appointments.documents as Appointment[]
-    // ).filter((appointment) => appointment.status === "pending");
-
-    // const cancelledAppointments = (
-    //   appointments.documents as Appointment[]
-    // ).filter((appointment) => appointment.status === "cancelled");
-
-    // const data = {
-    //   totalCount: appointments.total,
-    //   scheduledCount: scheduledAppointments.length,
-    //   pendingCount: pendingAppointments.length,
-    //   cancelledCount: cancelledAppointments.length,
-    //   documents: appointments.documents,
-    // };
-
-    const initialCounts = {
-      scheduledCount: 0,
-      pendingCount: 0,
-      cancelledCount: 0,
-    };
-
-    const counts = (appointments.documents as Appointment[]).reduce(
-      (acc, appointment) => {
-        switch (appointment.status) {
-          case "scheduled":
-            acc.scheduledCount++;
-            break;
-          case "pending":
-            acc.pendingCount++;
-            break;
-          case "cancelled":
-            acc.cancelledCount++;
-            break;
-        }
+    const counts = appointments.reduce(
+      (acc: any, apt: any) => {
+        if (apt.status === 'scheduled') acc.scheduledCount++;
+        else if (apt.status === 'pending') acc.pendingCount++;
+        else if (apt.status === 'cancelled') acc.cancelledCount++;
         return acc;
       },
-      initialCounts
+      { scheduledCount: 0, pendingCount: 0, cancelledCount: 0 }
     );
 
-    const data = {
-      totalCount: appointments.total,
+    return {
+      totalCount: appointments.length,
       ...counts,
-      documents: appointments.documents,
+      documents: appointments.map(formatAppointmentResponse),
     };
-
-    return parseStringify(data);
   } catch (error) {
-    console.error(
-      "An error occurred while retrieving the recent appointments:",
-      error
-    );
+    console.error("An error occurred while retrieving the recent appointments:", error);
+    throw error;
   }
 };
 
-//  SEND SMS NOTIFICATION
-export const sendSMSNotification = async (userId: string, content: string) => {
-  try {
-    // https://appwrite.io/docs/references/1.5.x/server-nodejs/messaging#createSms
-    const message = await messaging.createSms(
-      ID.unique(),
-      content,
-      [],
-      [userId]
-    );
-    return parseStringify(message);
-  } catch (error) {
-    console.error("An error occurred while sending sms:", error);
-  }
-};
-
-//  UPDATE APPOINTMENT
+// UPDATE APPOINTMENT
 export const updateAppointment = async ({
   appointmentId,
   userId,
-  timeZone,
   appointment,
   type,
 }: UpdateAppointmentParams) => {
   try {
-    // Update appointment to scheduled -> https://appwrite.io/docs/references/cloud/server-nodejs/databases#updateDocument
-    const updatedAppointment = await databases.updateDocument(
-      DATABASE_ID!,
-      APPOINTMENT_COLLECTION_ID!,
-      appointmentId,
-      appointment
+    const updateFields: string[] = [];
+    const updateValues: any[] = [];
+
+    if (appointment.primaryPhysician) {
+      updateFields.push('primary_physician = ?');
+      updateValues.push(appointment.primaryPhysician);
+    }
+
+    if (appointment.schedule) {
+      updateFields.push('schedule = ?');
+      updateValues.push(appointment.schedule);
+    }
+
+    if (appointment.status) {
+      updateFields.push('status = ?');
+      updateValues.push(appointment.status);
+    }
+
+    if (appointment.cancellationReason) {
+      updateFields.push('cancellation_reason = ?');
+      updateValues.push(appointment.cancellationReason);
+    }
+
+    updateValues.push(appointmentId);
+
+    await query(
+      `UPDATE appointments SET ${updateFields.join(', ')} WHERE id = ?`,
+      updateValues
     );
 
-    if (!updatedAppointment) throw Error;
+    // Get updated appointment
+    const updatedAppointment = await queryOne<any>(
+      `SELECT a.*,
+        p.id as patient_id, p.name as patient_name, p.email as patient_email, p.phone as patient_phone
+       FROM appointments a
+       JOIN patients p ON a.patient_id = p.id
+       WHERE a.id = ?`,
+      [appointmentId]
+    );
 
-    const smsMessage = `Greetings from CarePulse. ${type === "schedule" ? `Your appointment is confirmed for ${formatDateTime(appointment.schedule!, timeZone).dateTime} with Dr. ${appointment.primaryPhysician}` : `We regret to inform that your appointment for ${formatDateTime(appointment.schedule!, timeZone).dateTime} is cancelled. Reason:  ${appointment.cancellationReason}`}.`;
-    await sendSMSNotification(userId, smsMessage);
+    // Send email notification based on status
+    if (updatedAppointment) {
+      const appointmentDate = new Date(updatedAppointment.schedule);
+      const formattedDate = appointmentDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      const formattedTime = appointmentDate.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
 
-    revalidatePath("/admin");
-    return parseStringify(updatedAppointment);
+      if (appointment.status === 'scheduled') {
+        // Send scheduled email
+        await sendAppointmentScheduledEmail(
+          updatedAppointment.patient_email,
+          updatedAppointment.patient_name,
+          updatedAppointment.primary_physician,
+          'General Consultation', // You can extract specialty from doctors table if needed
+          formattedDate,
+          formattedTime
+        );
+      } else if (appointment.status === 'cancelled') {
+        // Send cancellation email
+        await sendAppointmentCancelledEmail(
+          updatedAppointment.patient_email,
+          updatedAppointment.patient_name,
+          updatedAppointment.primary_physician,
+          formattedDate,
+          formattedTime,
+          appointment.cancellationReason || 'No reason provided'
+        );
+      }
+    }
+
+    return formatAppointmentResponse(updatedAppointment);
   } catch (error) {
-    console.error("An error occurred while scheduling an appointment:", error);
+    console.error("An error occurred while updating an appointment:", error);
+    throw error;
   }
 };
 
 // GET APPOINTMENT
 export const getAppointment = async (appointmentId: string) => {
   try {
-    const appointment = await databases.getDocument(
-      DATABASE_ID!,
-      APPOINTMENT_COLLECTION_ID!,
-      appointmentId
+    const appointment = await queryOne<any>(
+      `SELECT a.*,
+        p.id as patient_id, p.name as patient_name, p.email as patient_email, p.phone as patient_phone
+       FROM appointments a
+       JOIN patients p ON a.patient_id = p.id
+       WHERE a.id = ?`,
+      [appointmentId]
     );
 
-    return parseStringify(appointment);
+    if (!appointment) {
+      throw new Error('Appointment not found');
+    }
+
+    return formatAppointmentResponse(appointment);
   } catch (error) {
-    console.error(
-      "An error occurred while retrieving the existing patient:",
-      error
-    );
+    console.error("An error occurred while retrieving the appointment:", error);
+    throw error;
   }
 };
 
@@ -197,30 +217,87 @@ export const approveAIAnalysis = async ({
   updatedAnalysis?: SymptomAnalysisResult;
 }) => {
   try {
-    const updateData: any = {
-      aiHumanApproved: approved,
-      aiReviewedBy: reviewedBy,
-      aiReviewedAt: new Date().toISOString(),
-    };
+    const updateFields = [
+      'ai_human_approved = ?',
+      'ai_reviewed_by = ?',
+      'ai_reviewed_at = NOW()'
+    ];
+    const updateValues: any[] = [approved, reviewedBy];
 
     if (notes) {
-      updateData.aiHumanNotes = notes;
+      updateFields.push('ai_human_notes = ?');
+      updateValues.push(notes);
     }
 
     if (updatedAnalysis) {
-      updateData.aiSymptomAnalysis = JSON.stringify(updatedAnalysis);
+      updateFields.push('ai_symptom_analysis = ?');
+      updateValues.push(JSON.stringify(updatedAnalysis));
     }
 
-    const updatedAppointment = await databases.updateDocument(
-      DATABASE_ID!,
-      APPOINTMENT_COLLECTION_ID!,
-      appointmentId,
-      updateData
+    updateValues.push(appointmentId);
+
+    await query(
+      `UPDATE appointments SET ${updateFields.join(', ')} WHERE id = ?`,
+      updateValues
     );
 
-    revalidatePath("/admin");
-    return parseStringify(updatedAppointment);
+    const updatedAppointment = await getAppointment(appointmentId);
+    return updatedAppointment;
   } catch (error) {
     console.error("An error occurred while approving AI analysis:", error);
+    throw error;
+  }
+};
+
+// Helper function to format appointment response
+function formatAppointmentResponse(apt: any) {
+  if (!apt) return null;
+
+  let parsedAnalysis = null;
+  if (apt.ai_symptom_analysis && typeof apt.ai_symptom_analysis === 'string') {
+    try {
+      // The DB returns a string, so we parse it here.
+      parsedAnalysis = JSON.parse(apt.ai_symptom_analysis);
+    } catch (e) {
+      console.error('Failed to parse ai_symptom_analysis from DB:', apt.ai_symptom_analysis);
+      // Leave as null if parsing fails
+    }
+  } else if (apt.ai_symptom_analysis) {
+    // If it's already an object (e.g., from a previous transformation)
+    parsedAnalysis = apt.ai_symptom_analysis;
+  }
+
+  return {
+    $id: apt.id,
+    $createdAt: apt.created_at,
+    $updatedAt: apt.updated_at,
+    patient: {
+      $id: apt.patient_id,
+      name: apt.patient_name,
+      email: apt.patient_email,
+      phone: apt.patient_phone,
+    },
+    primaryPhysician: apt.primary_physician,
+    schedule: apt.schedule,
+    status: apt.status,
+    reason: apt.reason,
+    note: apt.note,
+    cancellationReason: apt.cancellation_reason,
+    aiSymptomAnalysis: parsedAnalysis, // Use the parsed object
+    aiReviewedBy: apt.ai_reviewed_by,
+    aiReviewedAt: apt.ai_reviewed_at,
+    aiHumanApproved: apt.ai_human_approved,
+    aiHumanNotes: apt.ai_human_notes,
+  };
+}
+
+// SEND SMS NOTIFICATION (Placeholder)
+export const sendSMSNotification = async (userId: string, content: string) => {
+  try {
+    // TODO: Implement Twilio SMS
+    console.log(`SMS to user ${userId}: ${content}`);
+    return { success: true };
+  } catch (error) {
+    console.error("An error occurred while sending sms:", error);
   }
 };

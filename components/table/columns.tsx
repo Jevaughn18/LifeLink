@@ -84,42 +84,28 @@ export const columns: ColumnDef<Appointment>[] = [
       const appointment = row.original;
       const [reviewOpen, setReviewOpen] = useState(false);
 
-      // Check if appointment has AI analysis
-      if (!appointment.aiSymptomAnalysis) {
+      // The data from the database is already a parsed object.
+      const aiAnalysis = appointment.aiSymptomAnalysis as SymptomAnalysisResult | null;
+
+      if (!aiAnalysis) {
         return <p className="text-14-regular text-gray-500">No AI data</p>;
       }
-
-      let aiAnalysis: SymptomAnalysisResult | null = null;
-      try {
-        aiAnalysis = JSON.parse(appointment.aiSymptomAnalysis);
-      } catch (e) {
-        return <p className="text-14-regular text-red-500">Error</p>;
-      }
-
-      const getUrgencyColor = (urgency: string) => {
-        switch (urgency) {
-          case "Critical":
-            return "bg-red-600";
-          case "High":
-            return "bg-orange-500";
-          case "Medium":
-            return "bg-yellow-500";
-          case "Low":
-            return "bg-green-500";
-          default:
-            return "bg-gray-500";
-        }
-      };
 
       return (
         <>
           <div className="flex flex-col gap-1">
-            <Badge className={`${getUrgencyColor(aiAnalysis.urgency_level)} w-fit`}>
-              {aiAnalysis.urgency_level}
+            <Badge className="bg-blue-600 w-fit">
+              {aiAnalysis.symptom_category}
             </Badge>
-            {appointment.aiHumanApproved ? (
-              <Badge className="bg-green-600 w-fit">✓ Reviewed</Badge>
+            {appointment.aiReviewedBy ? (
+              // Has been reviewed
+              appointment.aiHumanApproved ? (
+                <Badge className="bg-green-600 w-fit">✓ Approved</Badge>
+              ) : (
+                <Badge className="bg-red-600 w-fit">✗ Rejected</Badge>
+              )
             ) : (
+              // Not reviewed yet
               <Button
                 size="sm"
                 onClick={() => setReviewOpen(true)}
@@ -146,22 +132,26 @@ export const columns: ColumnDef<Appointment>[] = [
 
       return (
         <div className="flex gap-1">
-          <AppointmentModal
-            patientId={appointment.patient.$id}
-            userId={appointment.userId}
-            appointment={appointment}
-            type="schedule"
-            title="Schedule Appointment"
-            description="Please confirm the following details to schedule."
-          />
-          <AppointmentModal
-            patientId={appointment.patient.$id}
-            userId={appointment.userId}
-            appointment={appointment}
-            type="cancel"
-            title="Cancel Appointment"
-            description="Are you sure you want to cancel your appointment?"
-          />
+          {(appointment.status === "pending" || appointment.status === "cancelled") && (
+            <AppointmentModal
+              patientId={appointment.patient.$id}
+              userId={appointment.userId}
+              appointment={appointment}
+              type="schedule"
+              title="Schedule Appointment"
+              description="Please confirm the following details to schedule."
+            />
+          )}
+          {appointment.status === "scheduled" && (
+            <AppointmentModal
+              patientId={appointment.patient.$id}
+              userId={appointment.userId}
+              appointment={appointment}
+              type="cancel"
+              title="Cancel Appointment"
+              description="Are you sure you want to cancel your appointment?"
+            />
+          )}
         </div>
       );
     },

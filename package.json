@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:init": "tsx scripts/init-database.ts",
+    "migrate": "tsx scripts/migrate-appwrite-to-mysql.ts",
+    "test:email": "tsx scripts/test-email.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
@@ -21,9 +24,12 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@sentry/nextjs": "^10.5.0",
     "@tanstack/react-table": "^8.17.0",
+    "@types/bcryptjs": "^2.4.6",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
+    "dotenv": "^17.2.3",
     "eslint-config-prettier": "^9.1.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-tailwindcss": "^3.15.1",
@@ -35,6 +41,7 @@
     "next": "^14.2.32",
     "next-themes": "^0.3.0",
     "node-appwrite": "^12.0.1",
+    "nodemailer": "^7.0.11",
     "prettier": "^3.2.5",
     "react": "^18",
     "react-datepicker": "^6.9.0",
@@ -42,6 +49,7 @@
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.51.4",
     "react-phone-number-input": "^3.4.1",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
     "twilio": "^5.0.4",
@@ -49,6 +57,7 @@
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/nodemailer": "^7.0.4",
     "@types/react": "^18",
     "@types/react-datepicker": "^6.2.0",
     "@types/react-dom": "^18",
@@ -57,6 +66,7 @@
     "eslint-plugin-import": "^2.29.1",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

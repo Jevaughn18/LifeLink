@@ -8,9 +8,17 @@ export const UserFormValidation = z.object({
   email: z.string().email("Invalid email address"),
   phone: z
     .string()
-    .refine((phone) => /^\+\d{10,15}$/.test(phone), "Invalid phone number"),
+    .refine(
+      (phone) => /^\+\d{10,15}$/.test(phone),
+      "Invalid phone number",
+    ),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
 });
-
 export const PatientFormValidation = z.object({
   name: z
     .string()
@@ -19,7 +27,16 @@ export const PatientFormValidation = z.object({
   email: z.string().email("Invalid email address"),
   phone: z
     .string()
-    .refine((phone) => /^\+\d{10,15}$/.test(phone), "Invalid phone number"),
+    .refine(
+      (phone) => /^\+\d{10,15}$/.test(phone),
+      "Invalid phone number",
+    ),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number"),
   birthDate: z.coerce.date(),
   gender: z.enum(["male", "female", "other"]),
   address: z
@@ -55,9 +72,7 @@ export const PatientFormValidation = z.object({
   pastMedicalHistory: z.string().optional(),
   identificationType: z.string().optional(),
   identificationNumber: z.string().optional(),
-  identificationDocument: z
-    .array(z.instanceof(File))
-    .min(1, "You must upload an identification document"),
+  identificationDocument: z.array(z.instanceof(File)).optional(),
 
   treatmentConsent: z
     .boolean()

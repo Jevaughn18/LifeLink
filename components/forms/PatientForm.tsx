@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { toast } from "sonner";
 
 import { Form } from "@/components/ui/form";
-import { createUser } from "@/lib/actions/patient.actions";
+import { createEmailVerification } from "@/lib/actions/verification.actions";
 import { UserFormValidation } from "@/lib/validation";
 
 import "react-phone-number-input/style.css";
@@ -24,6 +25,7 @@ export const PatientForm = () => {
       name: "",
       email: "",
       phone: "",
+      password: "",
     },
   });
 
@@ -31,19 +33,22 @@ export const PatientForm = () => {
     setIsLoading(true);
 
     try {
-      const user = {
+      // Send verification email with phone number
+      const result = await createEmailVerification({
         name: values.name,
         email: values.email,
         phone: values.phone,
-      };
+        password: values.password,
+      });
 
-      const newUser = await createUser(user);
-
-      if (newUser) {
-        router.push(`/patients/${newUser.$id}/register`);
+      if (result.success) {
+        toast.success("Verification code sent to your email!");
+        // Redirect to email verification page
+        router.push(`/verify-email?email=${encodeURIComponent(values.email)}`);
       }
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      console.error("Error:", error);
+      toast.error(error.message || "Failed to send verification email. Please try again.");
     }
 
     setIsLoading(false);
@@ -81,8 +86,17 @@ export const PatientForm = () => {
           fieldType={FormFieldType.PHONE_INPUT}
           control={form.control}
           name="phone"
-          label="Phone number"
+          label="Phone Number"
           placeholder="(555) 123-4567"
+        />
+
+        <CustomFormField
+          fieldType={FormFieldType.INPUT}
+          control={form.control}
+          name="password"
+          label="Password"
+          placeholder="Enter your password"
+          iconAlt="password"
         />
 
         <SubmitButton isLoading={isLoading}>Get Started</SubmitButton>

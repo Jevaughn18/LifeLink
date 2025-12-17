@@ -11,7 +11,8 @@ declare type Status = "pending" | "scheduled" | "cancelled";
 declare interface CreateUserParams {
   name: string;
   email: string;
-  phone: string;
+  phone?: string;
+  password?: string;
 }
 declare interface User extends CreateUserParams {
   $id: string;
@@ -59,7 +60,6 @@ declare type UpdateAppointmentParams = {
 // AI Analysis Types
 declare interface SymptomAnalysisResult {
   symptom_category: string;
-  urgency_level: 'Low' | 'Medium' | 'High' | 'Critical';
   keywords: string[];
   recommended_specialty: string;
   requires_human_review: boolean;

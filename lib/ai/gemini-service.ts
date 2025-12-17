@@ -13,7 +13,6 @@
 
 export interface SymptomAnalysisResult {
   symptom_category: string;
-  urgency_level: 'Low' | 'Medium' | 'High' | 'Critical';
   keywords: string[];
   recommended_specialty: string;
   requires_human_review: boolean;
@@ -31,10 +30,88 @@ export interface MedicalHistoryAnalysis {
 export interface InsuranceInsight {
   insurance_plan: string;
   risk_category: 'Low' | 'Medium' | 'High' | 'Chronic';
-  urgency_level: 'Low' | 'Medium' | 'High' | 'Critical';
   region: string;
   visit_type: 'Acute' | 'Chronic' | 'Preventive' | 'Emergency';
   anonymized: boolean;
+}
+
+async function parseAndRepairJson(text: string): Promise<any> {
+  console.log('[DEBUG] Entering parseAndRepairJson with text:', text);
+
+  try {
+    // First attempt: standard JSON parsing
+    const result = JSON.parse(text);
+    console.log('[DEBUG] Initial JSON.parse successful.');
+    return result;
+  } catch (e) {
+    console.log('[DEBUG] Initial JSON.parse failed. Trying regex extraction.');
+    // Second attempt: try to extract JSON from a messy string
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        const result = JSON.parse(jsonMatch[0]);
+        console.log('[DEBUG] Regex extraction and parse successful.');
+        return result;
+      } catch (e2) {
+        console.log('[DEBUG] Regex extraction failed. Proceeding to AI repair.');
+      }
+    }
+
+    console.warn("[DEBUG] Initial JSON parsing failed, attempting AI repair...");
+
+    // Third attempt: AI-powered repair
+    try {
+      const repairResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY_GEMINI}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': process.env.NEXT_PUBLIC_ENDPOINT || 'http://localhost:3000',
+          'X-Title': 'LifeLink Healthcare - JSON Repair',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-2.5-flash-lite-preview-09-2025',
+          messages: [
+            {
+              role: 'system',
+              content: `You are a JSON repair utility. The user will provide a string that failed to parse as JSON.
+Your task is to correct any syntax errors and return ONLY the valid JSON object.
+Do not include any explanatory text, markdown, or anything other than the raw, corrected JSON.`,
+            },
+            {
+              role: 'user',
+              content: `Please repair the following text to make it valid JSON:\n\n${text}`,
+            },
+          ],
+          temperature: 0.0, // Zero temperature for deterministic repair
+          max_tokens: 500,
+        }),
+      });
+
+      if (!repairResponse.ok) {
+        const errorBody = await repairResponse.text();
+        console.error('[DEBUG] AI repair API error response:', errorBody);
+        throw new Error(`AI repair API error: ${repairResponse.statusText}`);
+      }
+
+      const repairData = await repairResponse.json();
+      const repairedContent = repairData.choices[0]?.message?.content;
+      console.log('[DEBUG] AI repair response content:', repairedContent);
+
+
+      if (!repairedContent) {
+        throw new Error('AI repair service returned no content.');
+      }
+
+      // Final attempt to parse the repaired JSON
+      const finalResult = JSON.parse(repairedContent);
+      console.log('[DEBUG] AI repair and parse successful.');
+      return finalResult;
+    } catch (repairError) {
+      console.error('[DEBUG] AI JSON repair failed:', repairError);
+      throw new Error('Failed to parse and repair JSON from AI response.');
+    }
+  }
 }
 
 /**
@@ -44,6 +121,7 @@ export interface InsuranceInsight {
 export async function analyzeSymptoms(
   symptomText: string
 ): Promise<SymptomAnalysisResult> {
+  console.log('[DEBUG] Starting analyzeSymptoms for text:', symptomText);
   try {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -79,12 +157,11 @@ Respond ONLY with valid JSON. No explanatory text before or after.`,
 Provide structured output in this EXACT JSON format:
 {
   "symptom_category": "one of: Cardiovascular, Respiratory, Gastrointestinal, Neurological, Musculoskeletal, Dermatological, Mental Health, General/Other",
-  "urgency_level": "Low/Medium/High/Critical",
   "keywords": ["keyword1", "keyword2"],
   "recommended_specialty": "specialty name or General Practice",
   "requires_human_review": true/false,
   "confidence_score": 0.0-1.0,
-  "reasoning": "brief explanation of your assessment"
+  "reasoning": "brief explanation of your categorization"
 }`,
           },
         ],
@@ -94,32 +171,35 @@ Provide structured output in this EXACT JSON format:
     });
 
     if (!response.ok) {
+      const errorBody = await response.text();
+      console.error('[DEBUG] OpenRouter API error response:', errorBody);
       throw new Error(`OpenRouter API error: ${response.statusText}`);
     }
 
     const data = await response.json();
     const content = data.choices[0]?.message?.content;
+    console.log('[DEBUG] Raw AI response content:', content);
 
     if (!content) {
       throw new Error('No response from AI service');
     }
 
-    // Parse JSON response
-    const result = JSON.parse(content);
+    // Use the robust parsing and repair function
+    const result = await parseAndRepairJson(content);
+    console.log('[DEBUG] Successfully parsed and repaired JSON:', result);
 
     // Validate response structure
-    if (!result.symptom_category || !result.urgency_level) {
-      throw new Error('Invalid AI response structure');
+    if (!result.symptom_category) {
+      throw new Error('Invalid AI response structure: missing symptom_category');
     }
 
     return result as SymptomAnalysisResult;
   } catch (error) {
-    console.error('Error analyzing symptoms:', error);
+    console.error('[DEBUG] Final error in analyzeSymptoms:', error);
 
     // Return safe fallback that requires human review
     return {
       symptom_category: 'General/Other',
-      urgency_level: 'Medium',
       keywords: [],
       recommended_specialty: 'General Practice',
       requires_human_review: true,
@@ -195,7 +275,7 @@ Provide structured output in this EXACT JSON format:
       throw new Error('No response from AI service');
     }
 
-    const result = JSON.parse(content);
+    const result = await parseAndRepairJson(content);
     return result as MedicalHistoryAnalysis;
   } catch (error) {
     console.error('Error analyzing medical history:', error);
@@ -219,12 +299,10 @@ export async function createInsuranceInsight(
   symptomAnalysis?: SymptomAnalysisResult,
   medicalHistoryAnalysis?: MedicalHistoryAnalysis
 ): Promise<InsuranceInsight> {
-  // Determine visit type based on urgency and medical history
+  // Determine visit type based on medical history
   let visitType: InsuranceInsight['visit_type'] = 'Acute';
 
-  if (symptomAnalysis?.urgency_level === 'Critical') {
-    visitType = 'Emergency';
-  } else if (medicalHistoryAnalysis?.chronic_conditions.length && medicalHistoryAnalysis.chronic_conditions.length > 0) {
+  if (medicalHistoryAnalysis?.chronic_conditions.length && medicalHistoryAnalysis.chronic_conditions.length > 0) {
     visitType = 'Chronic';
   } else if (medicalHistoryAnalysis?.preventive_care_recommended) {
     visitType = 'Preventive';
@@ -233,7 +311,6 @@ export async function createInsuranceInsight(
   return {
     insurance_plan: insurancePlan,
     risk_category: medicalHistoryAnalysis?.risk_category || 'Medium',
-    urgency_level: symptomAnalysis?.urgency_level || 'Medium',
     region: region,
     visit_type: visitType,
     anonymized: true, // Always true - no patient identifiers
@@ -246,8 +323,6 @@ export async function createInsuranceInsight(
 export function shouldRequireHumanReview(analysis: SymptomAnalysisResult): boolean {
   return (
     analysis.requires_human_review ||
-    analysis.confidence_score < 0.7 ||
-    analysis.urgency_level === 'Critical' ||
-    analysis.urgency_level === 'High'
+    analysis.confidence_score < 0.7
   );
 }

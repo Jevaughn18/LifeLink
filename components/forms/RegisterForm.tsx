@@ -14,7 +14,6 @@ import { SelectItem } from "@/components/ui/select";
 import {
   Doctors,
   GenderOptions,
-  IdentificationTypes,
   PatientFormDefaultValues,
 } from "@/constants";
 import { registerPatient } from "@/lib/actions/patient.actions";
@@ -23,7 +22,6 @@ import { PatientFormValidation } from "@/lib/validation";
 import "react-datepicker/dist/react-datepicker.css";
 import "react-phone-number-input/style.css";
 import CustomFormField, { FormFieldType } from "../CustomFormField";
-import { FileUploader } from "../FileUploader";
 import SubmitButton from "../SubmitButton";
 
 const RegisterForm = ({ user }: { user: User }) => {
@@ -43,27 +41,13 @@ const RegisterForm = ({ user }: { user: User }) => {
   const onSubmit = async (values: z.infer<typeof PatientFormValidation>) => {
     setIsLoading(true);
 
-    // Store file info in form data as
-    let formData;
-    if (
-      values.identificationDocument &&
-      values.identificationDocument?.length > 0
-    ) {
-      const blobFile = new Blob([values.identificationDocument[0]], {
-        type: values.identificationDocument[0].type,
-      });
-
-      formData = new FormData();
-      formData.append("blobFile", blobFile);
-      formData.append("fileName", values.identificationDocument[0].name);
-    }
-
     try {
       const patient = {
         userId: user.$id,
         name: values.name,
         email: values.email,
         phone: values.phone,
+        password: values.password,
         birthDate: new Date(values.birthDate),
         gender: values.gender,
         address: values.address,
@@ -77,11 +61,6 @@ const RegisterForm = ({ user }: { user: User }) => {
         currentMedication: values.currentMedication,
         familyMedicalHistory: values.familyMedicalHistory,
         pastMedicalHistory: values.pastMedicalHistory,
-        identificationType: values.identificationType,
-        identificationNumber: values.identificationNumber,
-        identificationDocument: values.identificationDocument
-          ? formData
-          : undefined,
         privacyConsent: values.privacyConsent,
       };
 
@@ -119,9 +98,11 @@ const RegisterForm = ({ user }: { user: User }) => {
             fieldType={FormFieldType.INPUT}
             control={form.control}
             name="name"
+            label="Full name"
             placeholder="John Doe"
             iconSrc="/assets/icons/user.svg"
             iconAlt="user"
+            disabled={true}
           />
 
           {/* EMAIL & PHONE */}
@@ -130,10 +111,11 @@ const RegisterForm = ({ user }: { user: User }) => {
               fieldType={FormFieldType.INPUT}
               control={form.control}
               name="email"
-              label="Email address"
+              label="Email address (Verified ✓)"
               placeholder="johndoe@gmail.com"
               iconSrc="/assets/icons/email.svg"
               iconAlt="email"
+              disabled={true}
             />
 
             <CustomFormField
@@ -142,8 +124,10 @@ const RegisterForm = ({ user }: { user: User }) => {
               name="phone"
               label="Phone Number"
               placeholder="(555) 123-4567"
+              disabled={true}
             />
           </div>
+
 
           {/* BirthDate & Gender */}
           <div className="flex flex-col gap-6 xl:flex-row">
@@ -304,46 +288,6 @@ const RegisterForm = ({ user }: { user: User }) => {
               placeholder="Appendectomy in 2015, Asthma diagnosis in childhood"
             />
           </div>
-        </section>
-
-        <section className="space-y-6">
-          <div className="mb-9 space-y-1">
-            <h2 className="sub-header">Identification and Verfication</h2>
-          </div>
-
-          <CustomFormField
-            fieldType={FormFieldType.SELECT}
-            control={form.control}
-            name="identificationType"
-            label="Identification Type"
-            placeholder="Select identification type"
-          >
-            {IdentificationTypes.map((type, i) => (
-              <SelectItem key={type + i} value={type}>
-                {type}
-              </SelectItem>
-            ))}
-          </CustomFormField>
-
-          <CustomFormField
-            fieldType={FormFieldType.INPUT}
-            control={form.control}
-            name="identificationNumber"
-            label="Identification Number"
-            placeholder="123456789"
-          />
-
-          <CustomFormField
-            fieldType={FormFieldType.SKELETON}
-            control={form.control}
-            name="identificationDocument"
-            label="Scanned Copy of Identification Document"
-            renderSkeleton={(field) => (
-              <FormControl>
-                <FileUploader files={field.value} onChange={field.onChange} />
-              </FormControl>
-            )}
-          />
         </section>
 
         <section className="space-y-6">

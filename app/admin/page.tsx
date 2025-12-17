@@ -22,15 +22,7 @@ const AdminPage = async () => {
           />
         </Link>
 
-        <div className="flex items-center gap-4">
-          <Link
-            href="/admin/sagicor-insights"
-            className="text-green-500 hover:text-green-400 text-14-medium"
-          >
-            📊 Sagicor Insights
-          </Link>
-          <p className="text-16-semibold">Admin Dashboard</p>
-        </div>
+        <p className="text-16-semibold">Admin Dashboard</p>
       </header>
 
       <main className="admin-main">
