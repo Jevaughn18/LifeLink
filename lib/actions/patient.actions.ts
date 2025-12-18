@@ -140,25 +140,25 @@ export const registerPatient = async ({
     }
 
     // Create new patient (userId is now just the patient ID)
-    const userId = generateId();
     const patientId = generateId();
 
-    // Hash password if provided
-    const hashedPassword = (patient as any).password
-      ? await bcrypt.hash((patient as any).password, 10)
-      : null;
+    // Hash password if provided (get from email_verifications if not provided)
+    let hashedPassword = null;
+    if ((patient as any).password) {
+      hashedPassword = await bcrypt.hash((patient as any).password, 10);
+    } else {
+      // Get password hash from email_verifications table
+      const verification = await queryOne<any>(
+        'SELECT password_hash FROM email_verifications WHERE email = ? AND is_verified = TRUE ORDER BY verified_at DESC LIMIT 1',
+        [patient.email]
+      );
+      hashedPassword = verification?.password_hash || null;
+    }
 
-    // Create user record first
-    await query(
-      `INSERT INTO users (id, name, email, phone, password)
-       VALUES (?, ?, ?, ?, ?)`,
-      [userId, patient.name, patient.email, patient.phone, hashedPassword]
-    );
-
-    // Then create patient record
+    // Create patient record (no separate users table needed)
     await query(
       `INSERT INTO patients (
-        id, user_id, name, email, phone, birth_date, gender, address, occupation,
+        id, name, email, phone, password, birth_date, gender, address, occupation,
         emergency_contact_name, emergency_contact_number, primary_physician,
         insurance_provider, insurance_policy_number,
         allergies, current_medication, family_medical_history, past_medical_history,
@@ -168,10 +168,10 @@ export const registerPatient = async ({
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         patientId,
-        userId,
         patient.name,
         patient.email,
         patient.phone,
+        hashedPassword,
         patient.birthDate,
         patient.gender,
         patient.address,

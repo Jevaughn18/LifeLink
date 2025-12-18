@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "db:init": "tsx scripts/init-database.ts",
+    "db:clear": "tsx scripts/clear-database.ts",
     "migrate": "tsx scripts/migrate-appwrite-to-mysql.ts",
     "test:email": "tsx scripts/test-email.ts"
   },
@@ -34,6 +35,7 @@
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-tailwindcss": "^3.15.1",
     "framer": "^2.4.1",
+    "framer-motion": "^12.23.26",
     "fs": "^0.0.1-security",
     "input-otp": "^1.2.4",
     "jsonwebtoken": "^9.0.2",

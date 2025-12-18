@@ -39,9 +39,19 @@ const RegisterForm = ({ user }: { user: User }) => {
   });
 
   const onSubmit = async (values: z.infer<typeof PatientFormValidation>) => {
+    console.log("Form submission started", values);
     setIsLoading(true);
 
     try {
+      // Convert File[] to FormData if files exist
+      let identificationFormData: FormData | undefined;
+      if (values.identificationDocument && values.identificationDocument.length > 0) {
+        identificationFormData = new FormData();
+        const file = values.identificationDocument[0];
+        identificationFormData.append("blobFile", file);
+        identificationFormData.append("fileName", file.name);
+      }
+
       const patient = {
         userId: user.$id,
         name: values.name,
@@ -61,16 +71,26 @@ const RegisterForm = ({ user }: { user: User }) => {
         currentMedication: values.currentMedication,
         familyMedicalHistory: values.familyMedicalHistory,
         pastMedicalHistory: values.pastMedicalHistory,
+        identificationType: values.identificationType,
+        identificationNumber: values.identificationNumber,
+        identificationDocument: identificationFormData,
         privacyConsent: values.privacyConsent,
+        sagicorDataSharingConsent: values.sagicorDataSharingConsent || false,
       };
 
+      console.log("Calling registerPatient with:", patient);
       const newPatient = await registerPatient(patient);
+      console.log("registerPatient response:", newPatient);
 
       if (newPatient) {
-        router.push(`/patients/${user.$id}/new-appointment`);
+        console.log("Redirecting to new-appointment for patient:", newPatient.$id);
+        router.push(`/patients/${newPatient.$id}/new-appointment`);
+      } else {
+        console.error("No patient returned from registerPatient");
       }
     } catch (error) {
-      console.log(error);
+      console.error("Form submission error:", error);
+      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`);
     }
 
     setIsLoading(false);
@@ -83,17 +103,16 @@ const RegisterForm = ({ user }: { user: User }) => {
         className="flex-1 space-y-12"
       >
         <section className="space-y-4">
-          <h1 className="header">Welcome 👋</h1>
-          <p className="text-dark-700">Let us know more about yourself.</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-white">Welcome 👋</h1>
+          <p className="text-gray-300 text-base">Let us know more about yourself.</p>
         </section>
 
         <section className="space-y-6">
           <div className="mb-9 space-y-1">
-            <h2 className="sub-header">Personal Information</h2>
+            <h2 className="text-2xl md:text-3xl font-semibold text-white">Personal Information</h2>
           </div>
 
           {/* NAME */}
-
           <CustomFormField
             fieldType={FormFieldType.INPUT}
             control={form.control}
@@ -124,10 +143,8 @@ const RegisterForm = ({ user }: { user: User }) => {
               name="phone"
               label="Phone Number"
               placeholder="(555) 123-4567"
-              disabled={true}
             />
           </div>
-
 
           {/* BirthDate & Gender */}
           <div className="flex flex-col gap-6 xl:flex-row">
@@ -153,7 +170,7 @@ const RegisterForm = ({ user }: { user: User }) => {
                     {GenderOptions.map((option, i) => (
                       <div key={option + i} className="radio-group">
                         <RadioGroupItem value={option} id={option} />
-                        <Label htmlFor={option} className="cursor-pointer">
+                        <Label htmlFor={option} className="cursor-pointer text-gray-900">
                           {option}
                         </Label>
                       </div>
@@ -203,9 +220,10 @@ const RegisterForm = ({ user }: { user: User }) => {
           </div>
         </section>
 
+        {/* Medical Information Section */}
         <section className="space-y-6">
           <div className="mb-9 space-y-1">
-            <h2 className="sub-header">Medical Information</h2>
+            <h2 className="text-2xl md:text-3xl font-semibold text-white">Medical Information</h2>
           </div>
 
           {/* PRIMARY CARE PHYSICIAN */}
@@ -224,7 +242,7 @@ const RegisterForm = ({ user }: { user: User }) => {
                     width={32}
                     height={32}
                     alt="doctor"
-                    className="rounded-full border border-dark-500"
+                    className="rounded-full border border-gray-300"
                   />
                   <p>{doctor.name}</p>
                 </div>
@@ -290,9 +308,10 @@ const RegisterForm = ({ user }: { user: User }) => {
           </div>
         </section>
 
+        {/* Consent and Privacy Section */}
         <section className="space-y-6">
           <div className="mb-9 space-y-1">
-            <h2 className="sub-header">Consent and Privacy</h2>
+            <h2 className="text-2xl md:text-3xl font-semibold text-white">Consent and Privacy</h2>
           </div>
 
           <CustomFormField

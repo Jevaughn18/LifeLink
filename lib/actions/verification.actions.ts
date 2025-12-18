@@ -13,7 +13,7 @@ export const createEmailVerification = async ({
 }: {
   name: string;
   email: string;
-  phone: string;
+  phone?: string;
   password: string;
 }) => {
   try {
@@ -29,10 +29,10 @@ export const createEmailVerification = async ({
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
     const formattedExpiresAt = expiresAt.toISOString().slice(0, 19).replace('T', ' ');
 
-    // Call stored procedure with phone parameter
+    // Call stored procedure with phone parameter (use null if not provided)
     const result = await query(
       `CALL sp_create_email_verification(?, ?, ?, ?, ?, ?, ?, @p_success, @p_message)`,
-      [verificationId, email, hashedCode, name, phone, hashedPassword, formattedExpiresAt]
+      [verificationId, email, hashedCode, name, phone || null, hashedPassword, formattedExpiresAt]
     );
 
     // Get output parameters
@@ -141,6 +141,27 @@ export const verifyEmailCode = async ({
 // RESEND VERIFICATION CODE (Using Stored Procedure)
 export const resendVerificationCode = async (email: string) => {
   try {
+    console.log('🔄 Resending verification code for:', email);
+
+    // Check if email is already verified
+    const verifiedCheck = await queryOne<any>(
+      `SELECT id FROM email_verifications
+       WHERE email = ? AND is_verified = TRUE
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [email]
+    );
+
+    console.log('✅ Verified check result:', verifiedCheck);
+
+    if (verifiedCheck) {
+      console.log('⚠️ Email already verified');
+      return {
+        success: false,
+        message: 'Email already verified. Please proceed to login.',
+      };
+    }
+
     // Get verification data first for email sending
     const verification = await queryOne<any>(
       `SELECT name FROM email_verifications
@@ -150,7 +171,10 @@ export const resendVerificationCode = async (email: string) => {
       [email]
     );
 
+    console.log('📧 Verification record:', verification);
+
     if (!verification) {
+      console.log('❌ No pending verification found');
       return {
         success: false,
         message: 'No pending verification found for this email.',
@@ -159,52 +183,64 @@ export const resendVerificationCode = async (email: string) => {
 
     // Generate new code
     const newCode = generateVerificationCode();
+    console.log('🔢 Generated new verification code');
 
     // Hash the new code
     const hashedCode = await bcrypt.hash(newCode, 10);
+    console.log('🔐 Hashed new code');
 
     const newExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
     const formattedExpiresAt = newExpiresAt.toISOString().slice(0, 19).replace('T', ' ');
+    console.log('⏰ New expiration time:', formattedExpiresAt);
 
-    // Call stored procedure to update verification (with hashed code)
-    await query(
-      `CALL sp_resend_verification_code(?, ?, ?, @p_success, @p_message)`,
-      [email, hashedCode, formattedExpiresAt]
+    // Update verification code directly (bypassing stored procedure)
+    console.log('📝 Updating verification code directly in database');
+    const updateResult = await query(
+      `UPDATE email_verifications
+       SET verification_code = ?, expires_at = ?
+       WHERE email = ? AND is_verified = FALSE`,
+      [hashedCode, formattedExpiresAt, email]
     );
 
-    // Get output parameters
-    const output = await queryOne<any>(
-      'SELECT @p_success as success, @p_message as message',
-      []
-    );
+    console.log('📤 Update result:', updateResult);
 
-    if (!output?.success) {
+    // Check if any rows were updated
+    const affectedRows = (updateResult as any).affectedRows;
+    if (affectedRows === 0) {
+      console.log('❌ No rows updated - verification not found');
       return {
         success: false,
-        message: output?.message || 'Failed to resend code',
+        message: 'No pending verification found for this email.',
       };
     }
 
+    console.log('✅ Verification code updated successfully');
+
     // Send new verification email
+    console.log('📨 Sending verification email to:', email);
     const emailSent = await sendVerificationEmail(
       email,
       verification.name,
       newCode
     );
 
+    console.log('📧 Email sent result:', emailSent);
+
     if (!emailSent) {
+      console.log('❌ Failed to send email');
       return {
         success: false,
         message: 'Failed to send verification email. Please try again.',
       };
     }
 
+    console.log('✅ Resend verification code successful');
     return {
       success: true,
       message: 'New verification code sent to your email.',
     };
   } catch (error) {
-    console.error("Error resending verification code:", error);
+    console.error("❌ Error resending verification code:", error);
     return {
       success: false,
       message: 'Failed to resend code. Please try again.',
@@ -215,36 +251,43 @@ export const resendVerificationCode = async (email: string) => {
 // CHECK EMAIL VERIFICATION STATUS (Using Stored Procedure)
 export const checkEmailVerificationStatus = async (email: string) => {
   try {
+    console.log('🔍 Checking verification status for:', email);
+
     // Call stored procedure to check verification status
     await query(
-      `CALL sp_check_email_verification_status(?, @p_is_verified, @p_message, @p_name, @p_password_hash)`,
+      `CALL sp_check_email_verification_status(?, @p_is_verified, @p_message, @p_name, @p_phone, @p_password_hash)`,
       [email]
     );
 
     // Get output parameters
     const output = await queryOne<any>(
-      'SELECT @p_is_verified as isVerified, @p_message as message, @p_name as name, @p_password_hash as passwordHash',
+      'SELECT @p_is_verified as isVerified, @p_message as message, @p_name as name, @p_phone as phone, @p_password_hash as passwordHash',
       []
     );
 
+    console.log('📊 Verification status output:', output);
+
     if (!output?.isVerified) {
+      console.log('⚠️ Email not verified yet');
       return {
         isVerified: false,
         message: output?.message || 'Email not verified yet',
       };
     }
 
+    console.log('✅ Email is verified');
     return {
       isVerified: true,
       message: output.message,
       verificationData: {
         name: output.name,
         email: email,
+        phone: output.phone,
         passwordHash: output.passwordHash,
       },
     };
   } catch (error) {
-    console.error("Error checking verification status:", error);
+    console.error("❌ Error checking verification status:", error);
     return {
       isVerified: false,
       message: 'Failed to check verification status.',

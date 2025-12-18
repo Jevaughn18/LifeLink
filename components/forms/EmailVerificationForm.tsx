@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { verifyEmailCode, resendVerificationCode } from "@/lib/actions/verification.actions";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -15,7 +14,6 @@ export const EmailVerificationForm = ({
   email,
   onVerified,
 }: EmailVerificationFormProps) => {
-  const router = useRouter();
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -113,99 +111,102 @@ export const EmailVerificationForm = ({
   };
 
   return (
-    <div className="flex h-screen max-h-screen">
-      <section className="remove-scrollbar container">
-        <div className="sub-container max-w-[860px] flex-1 flex-col py-10">
-          <Image
-            src="/assets/icons/logo-full.svg"
-            height={1000}
-            width={1000}
-            alt="patient"
-            className="mb-12 h-10 w-fit"
-          />
+    <div className="flex h-screen max-h-screen overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-700">
+      {/* Full screen - Form centered */}
+      <section className="w-full h-full flex items-center justify-center px-4 py-6">
+        <div className="w-full max-w-[600px] flex flex-col gap-5">
+          {/* Logo */}
+          <div className="flex justify-center flex-shrink-0">
+            <Image
+              src="/assets/icons/logo-full.png"
+              height={200}
+              width={200}
+              alt="LifeLynk"
+              className="h-8 w-auto"
+            />
+          </div>
 
-          <div className="space-y-6">
-            <div className="mb-9 space-y-1">
-              <h1 className="header">Verify Your Email 📧</h1>
-              <p className="text-dark-700">
-                We've sent a 6-digit verification code to{" "}
-                <strong className="text-green-500">{email}</strong>
-              </p>
-            </div>
-
-            <form onSubmit={handleVerify} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-14-medium">Enter Verification Code</label>
-                <div className="flex gap-3 justify-center" onPaste={handlePaste}>
-                  {code.map((digit, index) => (
-                    <input
-                      key={index}
-                      id={`code-${index}`}
-                      type="text"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleCodeChange(index, e.target.value)}
-                      onKeyDown={(e) => handleKeyDown(index, e)}
-                      className="shad-input w-14 h-14 text-center text-2xl font-bold"
-                      disabled={isLoading}
-                      autoFocus={index === 0}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {error && (
-                <div className="bg-red-500/10 border border-red-500 text-red-500 p-3 rounded-md text-sm">
-                  {error}
-                </div>
-              )}
-
-              {resendMessage && (
-                <div className="bg-green-500/10 border border-green-500 text-green-500 p-3 rounded-md text-sm">
-                  {resendMessage}
-                </div>
-              )}
-
-              <Button
-                type="submit"
-                disabled={isLoading || code.join("").length !== 6}
-                className="shad-primary-btn w-full"
-              >
-                {isLoading ? "Verifying..." : "Verify Email"}
-              </Button>
-
+          {/* Main Content Card */}
+          <div className="bg-white/5 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/10 shadow-2xl flex-shrink-0">
+            <div className="space-y-6">
+              {/* Header */}
               <div className="text-center space-y-2">
-                <p className="text-dark-700 text-sm">Didn't receive the code?</p>
-                <Button
-                  type="button"
-                  variant="link"
-                  onClick={handleResend}
-                  disabled={isResending}
-                  className="text-green-500"
-                >
-                  {isResending ? "Sending..." : "Resend Code"}
-                </Button>
+                <h1 className="text-3xl md:text-4xl font-bold text-white">Verify Your Email</h1>
+                <p className="text-white/80 text-sm md:text-base">
+                  We've sent a 6-digit verification code to
+                </p>
+                <p className="text-white font-semibold text-base md:text-lg">{email}</p>
               </div>
-            </form>
 
-            <div className="bg-dark-400 p-4 rounded-lg border border-dark-500">
-              <p className="text-dark-700 text-sm">
-                <strong>💡 Tip:</strong> Check your spam folder if you don't see the email. The code expires in 15 minutes.
+              {/* Form */}
+              <form onSubmit={handleVerify} className="space-y-6">
+                <div className="space-y-4">
+                  <label className="text-white font-medium text-center block">Enter Verification Code</label>
+                  <div className="flex gap-3 justify-center" onPaste={handlePaste}>
+                    {code.map((digit, index) => (
+                      <input
+                        key={index}
+                        id={`code-${index}`}
+                        type="text"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleCodeChange(index, e.target.value)}
+                        onKeyDown={(e) => handleKeyDown(index, e)}
+                        className="w-14 h-14 text-center text-3xl font-bold rounded-lg border-2 border-white/30 bg-white/10 backdrop-blur-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/70 focus:border-white/50 transition-all"
+                        disabled={isLoading}
+                        autoFocus={index === 0}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="bg-red-500/20 border border-red-300 text-red-100 p-4 rounded-lg text-sm text-center">
+                    {error}
+                  </div>
+                )}
+
+                {resendMessage && (
+                  <div className="bg-white/20 border border-white/40 text-white p-4 rounded-lg text-sm text-center">
+                    {resendMessage}
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={isLoading || code.join("").length !== 6}
+                  className="w-full bg-white hover:bg-white/90 text-indigo-700 font-semibold py-6 rounded-lg transition-all text-lg"
+                >
+                  {isLoading ? "Verifying..." : "Verify Email"}
+                </Button>
+
+                <div className="text-center space-y-3">
+                  <p className="text-white/80 text-sm">Didn't receive the code?</p>
+                  <Button
+                    type="button"
+                    variant="link"
+                    onClick={handleResend}
+                    disabled={isResending}
+                    className="text-white font-semibold hover:underline p-0 h-auto text-base"
+                  >
+                    {isResending ? "Sending..." : "Resend Code"}
+                  </Button>
+                </div>
+              </form>
+
+              {/* Help text */}
+              <p className="text-white/60 text-xs md:text-sm text-center pt-3 border-t border-white/10">
+                Check your spam folder if you don't see the email. The code expires in 15 minutes.
               </p>
             </div>
           </div>
 
-          <p className="copyright py-12">© 2025 LifeLink - Sagicor Innovation Challenge</p>
+          {/* Footer */}
+          <p className="text-white/70 text-sm text-center flex-shrink-0 mt-2">
+            © 2025 LifeLynk
+          </p>
         </div>
       </section>
-
-      <Image
-        src="/assets/images/onboarding-img.png"
-        height={1000}
-        width={1000}
-        alt="verification"
-        className="side-img max-w-[390px]"
-      />
     </div>
   );
 };

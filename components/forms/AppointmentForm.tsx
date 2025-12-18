@@ -71,17 +71,20 @@ export const AppointmentForm = ({
     }
 
     try {
+      console.log("Form submission:", { type, patientId, userId });
+
       if (type === "create" && patientId) {
         const appointment = {
           userId,
           patient: patientId,
           primaryPhysician: values.primaryPhysician,
           schedule: new Date(values.schedule),
-          reason: values.reason!,
+          reason: values.reason || "",
           status: status as Status,
-          note: values.note,
+          note: values.note || "",
         };
 
+        console.log("Creating appointment:", appointment);
         const newAppointment = await createAppointment(appointment);
 
         if (newAppointment) {
@@ -94,6 +97,7 @@ export const AppointmentForm = ({
         const appointmentToUpdate = {
           userId,
           appointmentId: appointment?.$id!,
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           appointment: {
             primaryPhysician: values.primaryPhysician,
             schedule: new Date(values.schedule),

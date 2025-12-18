@@ -31,7 +31,7 @@ export const createAppointment = async (appointment: CreateAppointmentParams) =>
         appointment.primaryPhysician,
         appointment.schedule,
         appointment.status,
-        appointment.reason,
+        appointment.reason || null,
         appointment.note || null,
         aiAnalysis ? JSON.stringify(aiAnalysis) : null,
         false

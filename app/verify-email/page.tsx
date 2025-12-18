@@ -88,10 +88,10 @@ export default function VerifyEmailPage() {
 
   if (!email || isChecking) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="flex items-center gap-2">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-green-500 border-t-transparent"></div>
-          <p className="text-dark-700">Checking verification status...</p>
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-700">
+        <div className="flex items-center gap-3">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+          <p className="text-white text-lg">Checking verification status...</p>
         </div>
       </div>
     );

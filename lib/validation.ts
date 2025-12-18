@@ -6,12 +6,6 @@ export const UserFormValidation = z.object({
     .min(2, "Name must be at least 2 characters")
     .max(50, "Name must be at most 50 characters"),
   email: z.string().email("Invalid email address"),
-  phone: z
-    .string()
-    .refine(
-      (phone) => /^\+\d{10,15}$/.test(phone),
-      "Invalid phone number",
-    ),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -36,7 +30,8 @@ export const PatientFormValidation = z.object({
     .min(8, "Password must be at least 8 characters")
     .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
     .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number"),
+    .regex(/[0-9]/, "Password must contain at least one number")
+    .optional(),
   birthDate: z.coerce.date(),
   gender: z.enum(["male", "female", "other"]),
   address: z
