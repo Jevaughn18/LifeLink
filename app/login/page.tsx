@@ -16,11 +16,11 @@ const LoginPage = () => {
       <section className="w-full md:w-1/2 h-full flex items-center justify-center bg-white overflow-hidden">
         <div className="w-full max-w-[496px] px-8">
           <Image
-            src="/assets/icons/logo-full.svg"
+            src="/assets/logo.svg"
             height={1000}
             width={1000}
             alt="patient"
-            className="mb-12 h-10 w-fit"
+            className="mb-12 h-17 w-fit"
           />
 
           <PatientLoginForm />

@@ -88,11 +88,11 @@ export function SideNav({ activeSection, onSectionChange, patient }: SideNavProp
         {/* Logo */}
         <div className="mb-10 flex items-center gap-3">
           <Image
-            src="/assets/icons/logo-full.svg"
+            src="/assets/logo.svg"
             height={40}
             width={120}
             alt="LifeLink"
-            className="h-10 w-auto"
+            className="h-15 w-auto"
           />
         </div>
 

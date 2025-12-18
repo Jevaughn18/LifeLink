@@ -12,7 +12,7 @@ interface Appointment {
   date: string;
   time: string;
   type: "virtual" | "in-person";
-  status: "upcoming" | "today";
+  status: "upcoming" | "today" | "passed";
 }
 
 interface AppointmentsSectionProps {
@@ -24,31 +24,48 @@ export function AppointmentsSection({ userId }: AppointmentsSectionProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: Fetch real appointments from database
-    // For now, using mock data
-    const mockAppointments: Appointment[] = [
-      {
-        id: "1",
-        doctor: "Dr. Maya Patel",
-        specialty: "Cardiologist",
-        date: "Today",
-        time: "2:30 PM",
-        type: "virtual",
-        status: "today",
-      },
-      {
-        id: "2",
-        doctor: "Dr. James Wilson",
-        specialty: "General Physician",
-        date: "Dec 22",
-        time: "10:00 AM",
-        type: "in-person",
-        status: "upcoming",
-      },
-    ];
+    const fetchAppointments = async () => {
+      try {
+        const response = await fetch(`/api/appointments/list?userId=${userId}`);
+        const data = await response.json();
 
-    setAppointments(mockAppointments);
-    setLoading(false);
+        if (data.success && data.appointments) {
+          const formattedAppointments: Appointment[] = data.appointments.map((apt: any) => {
+            const appointmentDate = new Date(apt.schedule);
+            const today = new Date();
+            const isToday = appointmentDate.toDateString() === today.toDateString();
+            const isPassed = apt.appointment_status === 'passed';
+
+            return {
+              id: apt.id,
+              doctor: apt.primary_physician || "Doctor",
+              specialty: apt.reason || "General",
+              date: isToday
+                ? "Today"
+                : appointmentDate.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  }),
+              time: appointmentDate.toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true,
+              }),
+              type: "in-person" as const,
+              status: isPassed ? "passed" : (isToday ? "today" : "upcoming"),
+            };
+          });
+
+          setAppointments(formattedAppointments);
+        }
+      } catch (error) {
+        console.error("Failed to fetch appointments:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAppointments();
   }, [userId]);
 
   if (loading) {
@@ -93,28 +110,35 @@ export function AppointmentsSection({ userId }: AppointmentsSectionProps) {
                 "group flex items-center gap-4 rounded-xl border p-4 transition-all hover:shadow-md",
                 apt.status === "today"
                   ? "border-blue-200 bg-blue-50"
+                  : apt.status === "passed"
+                  ? "border-gray-200 bg-gray-50 opacity-75"
                   : "border-gray-200"
               )}
             >
               <div
                 className={cn(
                   "flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl",
-                  apt.type === "virtual" ? "bg-green-100" : "bg-gray-100"
+                  apt.type === "virtual" ? "bg-green-100" : apt.status === "passed" ? "bg-gray-200" : "bg-gray-100"
                 )}
               >
                 {apt.type === "virtual" ? (
                   <Video className="h-6 w-6 text-green-600" />
                 ) : (
-                  <MapPin className="h-6 w-6 text-gray-600" />
+                  <MapPin className={cn("h-6 w-6", apt.status === "passed" ? "text-gray-400" : "text-gray-600")} />
                 )}
               </div>
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-medium text-gray-900">{apt.doctor}</h3>
+                  <h3 className={cn("font-medium", apt.status === "passed" ? "text-gray-500" : "text-gray-900")}>{apt.doctor}</h3>
                   {apt.status === "today" && (
                     <span className="rounded-full bg-blue-600 px-2 py-0.5 text-xs font-medium text-white">
                       Today
+                    </span>
+                  )}
+                  {apt.status === "passed" && (
+                    <span className="rounded-full bg-gray-400 px-2 py-0.5 text-xs font-medium text-white">
+                      Passed
                     </span>
                   )}
                 </div>

@@ -4,10 +4,10 @@ import { useState } from "react";
 import { SideNav } from "./SideNav";
 import { HealthMetrics } from "./HealthMetrics";
 import { AppointmentsSection } from "./AppointmentsSection";
-import { MedicationsCard } from "./MedicationsCard";
 import { RecentRecords } from "./RecentRecords";
 import { InsightsCard } from "./InsightsCard";
 import { QuickActionsBar } from "./QuickActionsBar";
+import { HealthBotChat } from "./HealthBotChat";
 import { Bell, Search } from "lucide-react";
 
 interface DashboardClientProps {
@@ -17,6 +17,7 @@ interface DashboardClientProps {
 
 export function DashboardClient({ patient, userId }: DashboardClientProps) {
   const [activeSection, setActiveSection] = useState("overview");
+  const [showHealthBot, setShowHealthBot] = useState(false);
 
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -43,7 +44,7 @@ export function DashboardClient({ patient, userId }: DashboardClientProps) {
             <div className="animate-float-in">
               <p className="text-sm text-gray-500">{currentDate}</p>
               <h1 className="mt-1 text-3xl font-bold text-gray-900 lg:text-4xl">
-                Welcome back, {firstName} 👋
+                Welcome back, {firstName} 
               </h1>
             </div>
 
@@ -67,18 +68,18 @@ export function DashboardClient({ patient, userId }: DashboardClientProps) {
 
           {/* Quick Actions */}
           <div className="mb-8 animate-float-in stagger-2">
-            <QuickActionsBar userId={userId} />
+            <QuickActionsBar userId={userId} onMessageDoctor={() => setShowHealthBot(true)} />
           </div>
 
           {/* Health Metrics */}
           <div className="mb-8">
-            <HealthMetrics patient={patient} />
+            <HealthMetrics patient={patient} userId={userId} />
           </div>
 
           {/* Main Grid */}
-          <div className="grid gap-6 lg:grid-cols-5">
+          <div className="grid gap-6 lg:grid-cols-3">
             {/* Left Column */}
-            <div className="space-y-6 lg:col-span-3">
+            <div className="space-y-6 lg:col-span-2">
               <div className="animate-float-in stagger-3">
                 <AppointmentsSection userId={userId} />
               </div>
@@ -88,17 +89,23 @@ export function DashboardClient({ patient, userId }: DashboardClientProps) {
             </div>
 
             {/* Right Column */}
-            <div className="space-y-6 lg:col-span-2">
+            <div className="space-y-6 lg:col-span-1">
               <div className="animate-float-in stagger-3">
-                <MedicationsCard patient={patient} />
-              </div>
-              <div className="animate-float-in stagger-4">
-                <InsightsCard patient={patient} />
+                <InsightsCard patient={patient} userId={userId} />
               </div>
             </div>
           </div>
         </div>
       </main>
+
+      {/* Health Bot Chat */}
+      {showHealthBot && (
+        <HealthBotChat
+          userId={userId}
+          patientName={patientName}
+          onClose={() => setShowHealthBot(false)}
+        />
+      )}
     </div>
   );
 }

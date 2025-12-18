@@ -65,7 +65,7 @@ export const PatientLoginForm = () => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 space-y-6">
         <section className="mb-12 space-y-4">
-          <h1 className="text-4xl font-bold text-gray-900">Welcome Back 👋</h1>
+          <h1 className="text-4xl font-bold text-gray-900">Welcome Back </h1>
           <p className="text-gray-600 text-lg">Sign in to access your appointments.</p>
         </section>
 

@@ -56,7 +56,7 @@ export const PatientForm = () => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 space-y-6">
         <section className="mb-12 space-y-4">
-          <h1 className="text-4xl font-bold text-gray-900">Welcome to LifeLynk 👋</h1>
+          <h1 className="text-4xl font-bold text-gray-900">Welcome to LifeLink </h1>
           <p className="text-gray-600 text-lg">Get started with appointments.</p>
         </section>
 

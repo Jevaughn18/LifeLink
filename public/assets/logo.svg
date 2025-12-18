@@ -1,0 +1,33 @@
+<svg width="420" height="160" viewBox="0 0 420 160" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0B5ED7"></stop>
+      <stop offset="100%" stop-color="#2DBE6C"></stop>
+    </linearGradient>
+  </defs>
+
+  <!-- Heart -->
+  <path d="M80 120
+       C30 80, 40 35, 80 55
+       C120 35, 130 80, 80 120Z" fill="url(#heartGrad)"></path>
+
+  <!-- Medical Cross -->
+  <rect x="68" y="70" width="24" height="8" rx="2" fill="#FFFFFF"></rect>
+  <rect x="76" y="62" width="8" height="24" rx="2" fill="#FFFFFF"></rect>
+
+  <!-- Tech Circuit -->
+  <circle cx="118" cy="58" r="4" fill="#FFFFFF"></circle>
+  <line x1="92" y1="68" x2="118" y2="58" stroke="#FFFFFF" stroke-width="2"></line>
+
+  <!-- LifeLink Text -->
+  <text x="160" y="100" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="700" fill="#0B5ED7">
+    Life
+  </text>
+
+  <text x="240" y="100" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="700" fill="#2DBE6C">
+    Link
+  </text>
+
+</svg>
