@@ -2,37 +2,47 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { PatientLoginForm } from "@/components/forms/PatientLoginForm";
-import AuthLayout from "@/components/AuthLayout"; // Import AuthLayout
+import DoodleAnimationSlideshow from "@/components/DoodleAnimationSlideshow";
 
 const LoginPage = () => {
   return (
-    <AuthLayout>
-      <div className="sub-container max-w-[496px]">
-        <Image
-          src="/assets/icons/logo-full.svg"
-          height={1000}
-          width={1000}
-          alt="patient"
-          className="mb-12 h-10 w-fit"
-        />
-
-        <PatientLoginForm />
-
-        <div className="text-14-regular mt-8 flex justify-center gap-2">
-          <p className="text-dark-600">Don't have an account?</p>
-                      <Link href="/register" className="text-indigo-600">            Sign up
-          </Link>
-        </div>
-
-        <div className="text-14-regular mt-12 flex justify-between">
-          <p className="justify-items-end text-dark-600 xl:text-left">
-            © 2025 LifeLynk
-          </p>
-                      <Link href="/?admin=true" className="text-indigo-600">            Admin
-          </Link>
-        </div>
+    <div className="flex h-screen max-h-screen overflow-hidden">
+      {/* Left side - Animation (50%) */}
+      <div className="hidden md:flex md:w-1/2 h-full">
+        <DoodleAnimationSlideshow />
       </div>
-    </AuthLayout>
+
+      {/* Right side - Form (50%) */}
+      <section className="w-full md:w-1/2 h-full flex items-center justify-center bg-white overflow-hidden">
+        <div className="w-full max-w-[496px] px-8">
+          <Image
+            src="/assets/icons/logo-full.svg"
+            height={1000}
+            width={1000}
+            alt="patient"
+            className="mb-12 h-10 w-fit"
+          />
+
+          <PatientLoginForm />
+
+          <div className="text-14-regular mt-8 flex justify-center gap-2">
+            <p className="text-gray-600">Don't have an account?</p>
+            <Link href="/" className="text-blue-600 font-semibold hover:underline">
+              Sign up
+            </Link>
+          </div>
+
+          <div className="text-14-regular mt-12 flex justify-between">
+            <p className="text-gray-500">
+              © 2025 LifeLink
+            </p>
+            <Link href="/?admin=true" className="text-blue-600 font-semibold hover:underline">
+              Admin
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 };
 

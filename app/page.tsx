@@ -1,46 +1,53 @@
 import Image from "next/image";
 import Link from "next/link";
-import AuthLayout from "@/components/AuthLayout";
-import InitialRegisterForm from "@/components/forms/InitialRegisterForm";
-import { PasskeyModal } from "@/components/PasskeyModal"; // Keep this if still needed for admin
+
+import { PatientForm } from "@/components/forms/PatientForm";
+import { PasskeyModal } from "@/components/PasskeyModal";
+import DoodleAnimationSlideshow from "@/components/DoodleAnimationSlideshow";
 
 const Home = ({ searchParams }: SearchParamProps) => {
   const isAdmin = searchParams?.admin === "true";
 
   return (
-    <AuthLayout>
+    <div className="flex h-screen max-h-screen overflow-hidden">
       {isAdmin && <PasskeyModal />}
-      <div className="sub-container max-w-[496px]">
-        <Image
-          src="/assets/icons/logo-full.svg"
-          height={1000}
-          width={1000}
-          alt="LifeLink"
-          className="mb-12 h-10 w-fit"
-        />
 
-        <InitialRegisterForm />
-
-        <div className="text-14-regular mt-8 flex justify-center gap-2">
-          <p className="text-dark-600">Already have an account?</p>
-          <Link href="/login" className="text-indigo-600">
-            Login
-          </Link>
-        </div>
-
-        {/* Admin link handled by AuthLayout now, or can be kept here if needed specifically for the root */}
-        {/*
-        <div className="text-14-regular mt-12 flex justify-between">
-          <p className="justify-items-end text-dark-600 xl:text-left">
-            © 2025 LifeLynk
-          </p>
-          <Link href="/?admin=true" className="text-indigo-600">
-            Admin
-          </Link>
-        </div>
-        */}
+      {/* Left side - Animation (50%) */}
+      <div className="hidden md:flex md:w-1/2 h-full">
+        <DoodleAnimationSlideshow />
       </div>
-    </AuthLayout>
+
+      {/* Right side - Form (50%) */}
+      <section className="w-full md:w-1/2 h-full flex items-center justify-center bg-white overflow-hidden">
+        <div className="w-full max-w-[496px] px-8">
+          <Image
+            src="/assets/icons/logo-full.svg"
+            height={1000}
+            width={1000}
+            alt="patient"
+            className="mb-12 h-10 w-fit"
+          />
+
+          <PatientForm />
+
+          <div className="text-14-regular mt-8 flex justify-center gap-2">
+            <p className="text-gray-600">Already have an account?</p>
+            <Link href="/login" className="text-blue-600 font-semibold hover:underline">
+              Login
+            </Link>
+          </div>
+
+          <div className="text-14-regular mt-12 flex justify-between">
+            <p className="text-gray-500">
+              © 2025 LifeLynk
+            </p>
+            <Link href="/?admin=true" className="text-blue-600 font-semibold hover:underline">
+              Admin
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 };
 

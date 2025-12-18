@@ -57,11 +57,11 @@
   }
 
   .container {
-    @apply relative flex-1 overflow-y-auto px-[5%];
+    @apply relative flex-1 overflow-y-auto px-[5%] bg-black;
   }
 
   .sub-container {
-    @apply mx-auto flex size-full flex-col py-10;
+    @apply mx-auto flex size-full flex-col py-10 bg-black;
   }
 
   .side-img {
@@ -96,11 +96,11 @@
 
   /* ==== FORM */
   .radio-group {
-    @apply flex h-full flex-1 items-center gap-2 rounded-md border border-dashed border-dark-500 bg-dark-400 p-3;
+    @apply flex h-full flex-1 items-center gap-2 rounded-lg border-2 border-gray-300 bg-white p-4 shadow-sm;
   }
 
   .checkbox-label {
-    @apply cursor-pointer text-sm font-medium text-dark-700 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 md:leading-none;
+    @apply cursor-pointer text-sm font-medium text-gray-700 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 md:leading-none;
   }
 
   /* ==== File Upload */
@@ -195,19 +195,19 @@
   }
 
   .shad-input-label {
-    @apply text-14-medium text-dark-700 !important;
+    @apply text-14-medium text-gray-200 !important;
   }
 
   .shad-input {
-    @apply bg-dark-400 placeholder:text-dark-600 border-dark-500 h-11 focus-visible:ring-0 focus-visible:ring-offset-0 !important;
+    @apply bg-white placeholder:text-gray-400 border-2 border-gray-300 text-gray-900 h-12 rounded-lg px-4 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 shadow-sm !important;
   }
 
   .shad-input-icon {
-    @apply bg-dark-400 placeholder:text-dark-600 border-dark-500 h-11 focus-visible:ring-0 focus-visible:ring-offset-0 !important;
+    @apply bg-white placeholder:text-gray-400 border-2 border-gray-300 text-gray-900 h-12 rounded-lg px-4 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 shadow-sm !important;
   }
 
   .shad-textArea {
-    @apply bg-dark-400 placeholder:text-dark-600 border-dark-500 focus-visible:ring-0 focus-visible:ring-offset-0 !important;
+    @apply bg-white placeholder:text-gray-400 border-2 border-gray-300 text-gray-900 rounded-lg min-h-[100px] px-4 py-3 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 shadow-sm !important;
   }
 
   .shad-combobox-item {
@@ -219,11 +219,11 @@
   }
 
   .shad-select-trigger {
-    @apply bg-dark-400  placeholder:text-dark-600 border-dark-500 h-11 focus:ring-0 focus:ring-offset-0 !important;
+    @apply bg-white placeholder:text-gray-400 border-2 border-gray-300 text-gray-900 h-12 px-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm !important;
   }
 
   .shad-select-content {
-    @apply bg-dark-400 border-dark-500 !important;
+    @apply bg-white border-2 border-gray-200 text-gray-900 rounded-lg shadow-lg !important;
   }
 
   .shad-dialog {
@@ -268,12 +268,12 @@
 
   /* =====  REACT PHONE NUMBER INPUT OVERRIDES */
   .input-phone {
-    @apply mt-2 h-11 rounded-md px-3 text-sm border bg-dark-400 placeholder:text-dark-600 border-dark-500 !important;
+    @apply h-12 rounded-lg px-4 text-sm border-2 border-gray-300 bg-white text-gray-900 shadow-sm !important;
   }
 
   /* =====  REACT DATE PICKER OVERRIDES */
   .date-picker {
-    @apply overflow-hidden border-transparent w-full placeholder:text-dark-600  h-11 text-14-medium rounded-md px-3 outline-none !important;
+    @apply w-full h-12 text-14-medium rounded-lg px-4 border-2 border-gray-300 bg-white text-gray-900 shadow-sm outline-none !important;
   }
 }
 
@@ -290,45 +290,44 @@
 .react-datepicker__day-name,
 .react-datepicker__day,
 .react-datepicker-time__header {
-  background-color: #1a1d21 !important;
-  border-color: #363a3d !important;
-  color: #abb8c4 !important;
+  background-color: #ffffff !important;
+  border-color: #d1d5db !important;
+  color: #374151 !important;
 }
 
 .react-datepicker__current-month,
 .react-datepicker__day-name,
 .react-datepicker-time__header {
-  color: #ffffff !important;
+  color: #111827 !important;
 }
 
 .react-datepicker__triangle {
-  fill: #1a1d21 !important;
-  color: #1a1d21 !important;
-  stroke: #1a1d21 !important;
+  fill: #ffffff !important;
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 
 .react-datepicker__time-list-item:hover {
-  background-color: #363a3d !important;
+  background-color: #f3f4f6 !important;
 }
 
 .react-datepicker__input-container input {
-  background-color: #1a1d21 !important;
   width: 100%;
   outline: none;
 }
 
 .react-datepicker__day--selected {
-  background-color: #24ae7c !important;
+  background-color: #3b82f6 !important;
   color: #ffffff !important;
   border-radius: 4px;
 }
 
 .react-datepicker__time-list-item--selected {
-  background-color: #24ae7c !important;
+  background-color: #3b82f6 !important;
 }
 
 .react-datepicker__time-container {
-  border-left: 1px solid #363a3d !important;
+  border-left: 1px solid #d1d5db !important;
 }
 
 .react-datepicker__time-list-item {
@@ -337,14 +336,68 @@
 }
 
 /* =====  REACT PHONE NUMBER INPUT OVERRIDES */
-.PhoneInputInput {
-  outline: none;
-  margin-left: 4px;
-  background: #1a1d21;
-  font-size: 14px;
-  font-weight: 500;
+.PhoneInput {
+  pointer-events: auto !important;
+  user-select: auto !important;
+  touch-action: auto !important;
 }
 
-.PhoneInputInput::placeholder {
-  color: #1a1d21;
+.PhoneInput *,
+.PhoneInput *::before,
+.PhoneInput *::after {
+  pointer-events: auto !important;
+  user-select: auto !important;
+  touch-action: auto !important;
+}
+
+.PhoneInputCountry {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: auto !important;
+}
+
+.PhoneInputCountrySelect {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: auto !important;
+}
+
+.PhoneInputCountrySelectArrow {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.PhoneInputCountryIcon {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.PhoneInputInput {
+  outline: none !important;
+  margin-left: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827 !important;
+  background-color: transparent !important;
+  pointer-events: auto !important;
+  cursor: text !important;
+  user-select: text !important;
+}
+
+/* Remove any disabled pointer-events */
+.PhoneInput[disabled],
+.PhoneInput[disabled] * {
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+}
+
+.PhoneInput:not([disabled]),
+.PhoneInput:not([disabled]) * {
+  pointer-events: auto !important;
+}
+
+/* Dark background form labels */
+.bg-black label,
+.bg-black .shad-form-label {
+  color: #e5e7eb !important; /* gray-200 */
 }

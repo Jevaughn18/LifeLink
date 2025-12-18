@@ -24,7 +24,6 @@ export const PatientForm = () => {
     defaultValues: {
       name: "",
       email: "",
-      phone: "",
       password: "",
     },
   });
@@ -33,11 +32,10 @@ export const PatientForm = () => {
     setIsLoading(true);
 
     try {
-      // Send verification email with phone number
+      // Send verification email
       const result = await createEmailVerification({
         name: values.name,
         email: values.email,
-        phone: values.phone,
         password: values.password,
       });
 
@@ -58,8 +56,8 @@ export const PatientForm = () => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 space-y-6">
         <section className="mb-12 space-y-4">
-          <h1 className="header">Welcome to LifeLynk 👋</h1>
-          <p className="text-dark-700">Get started with appointments.</p>
+          <h1 className="text-4xl font-bold text-gray-900">Welcome to LifeLynk 👋</h1>
+          <p className="text-gray-600 text-lg">Get started with appointments.</p>
         </section>
 
         <CustomFormField
@@ -83,20 +81,11 @@ export const PatientForm = () => {
         />
 
         <CustomFormField
-          fieldType={FormFieldType.PHONE_INPUT}
-          control={form.control}
-          name="phone"
-          label="Phone Number"
-          placeholder="(555) 123-4567"
-        />
-
-        <CustomFormField
-          fieldType={FormFieldType.INPUT}
+          fieldType={FormFieldType.PASSWORD}
           control={form.control}
           name="password"
           label="Password"
           placeholder="Enter your password"
-          iconAlt="password"
         />
 
         <SubmitButton isLoading={isLoading}>Get Started</SubmitButton>

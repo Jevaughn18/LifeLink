@@ -47,46 +47,25 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
   switch (props.fieldType) {
     case FormFieldType.INPUT:
       return (
-        <div className="flex rounded-md border border-dark-500 bg-dark-400">
-          {props.iconSrc && (
-            <Image
-              src={props.iconSrc}
-              height={24}
-              width={24}
-              alt={props.iconAlt || "icon"}
-              className="ml-2"
-            />
-          )}
-          <FormControl>
-            <Input
-              placeholder={props.placeholder}
-              {...field}
-              className="shad-input border-0"
-            />
-          </FormControl>
-        </div>
+        <FormControl>
+          <Input
+            placeholder={props.placeholder}
+            {...field}
+            disabled={props.disabled}
+            className="h-12 rounded-lg border-2 border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 disabled:opacity-100 disabled:cursor-not-allowed disabled:bg-white shadow-sm px-4"
+          />
+        </FormControl>
       );
     case FormFieldType.PASSWORD:
       return (
-        <div className="flex rounded-md border border-dark-500 bg-dark-400">
-          {props.iconSrc && (
-            <Image
-              src={props.iconSrc}
-              height={24}
-              width={24}
-              alt={props.iconAlt || "icon"}
-              className="ml-2"
-            />
-          )}
-          <FormControl>
-            <Input
-              type="password"
-              placeholder={props.placeholder}
-              {...field}
-              className="shad-input border-0"
-            />
-          </FormControl>
-        </div>
+        <FormControl>
+          <Input
+            type="password"
+            placeholder={props.placeholder}
+            {...field}
+            className="h-12 rounded-lg border-2 border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 shadow-sm px-4"
+          />
+        </FormControl>
       );
     case FormFieldType.TEXTAREA:
       return (
@@ -94,35 +73,35 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
           <Textarea
             placeholder={props.placeholder}
             {...field}
-            className="shad-textArea"
+            className="rounded-lg border-2 border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 min-h-[100px] resize-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-blue-500 px-4 py-3 shadow-sm"
             disabled={props.disabled}
           />
         </FormControl>
       );
     case FormFieldType.PHONE_INPUT:
       return (
-        <FormControl>
-          <PhoneInput
-            defaultCountry="US"
-            placeholder={props.placeholder}
-            international
-            withCountryCallingCode
-            value={field.value as E164Number | undefined}
-            onChange={field.onChange}
-            className="input-phone"
-          />
-        </FormControl>
+        <PhoneInput
+          defaultCountry="US"
+          placeholder={props.placeholder}
+          international
+          withCountryCallingCode
+          value={field.value as E164Number | undefined}
+          onChange={field.onChange}
+          disabled={props.disabled}
+          className="input-phone !h-12 !rounded-lg !border-2 !border-gray-300 !bg-white !text-gray-900 focus-within:!ring-2 focus-within:!ring-blue-500 focus-within:!border-blue-500 disabled:!opacity-100 disabled:!cursor-not-allowed"
+        />
       );
     case FormFieldType.CHECKBOX:
       return (
         <FormControl>
-          <div className="flex items-center gap-4">
+          <div className="flex items-start gap-3">
             <Checkbox
               id={props.name}
               checked={field.value}
               onCheckedChange={field.onChange}
+              className="mt-0.5 border-gray-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
             />
-            <label htmlFor={props.name} className="checkbox-label">
+            <label htmlFor={props.name} className="text-gray-200 text-sm leading-relaxed cursor-pointer">
               {props.label}
             </label>
           </div>
@@ -130,13 +109,13 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
       );
     case FormFieldType.DATE_PICKER:
       return (
-        <div className="flex rounded-md border border-dark-500 bg-dark-400">
+        <div className="flex rounded-lg border-2 border-gray-300 bg-white h-12 items-center focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 shadow-sm">
           <Image
             src="/assets/icons/calendar.svg"
-            height={24}
-            width={24}
-            alt="user"
-            className="ml-2"
+            height={20}
+            width={20}
+            alt="calendar"
+            className="ml-3 opacity-60"
           />
           <FormControl>
             <ReactDatePicker
@@ -146,6 +125,7 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
               timeInputLabel="Time:"
               dateFormat={props.dateFormat ?? "MM/dd/yyyy"}
               wrapperClassName="date-picker"
+              className="w-full bg-transparent text-gray-900 h-12 px-3 focus:outline-none font-medium"
             />
           </FormControl>
         </div>
@@ -155,11 +135,11 @@ const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
         <FormControl>
           <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
-              <SelectTrigger className="shad-select-trigger">
+              <SelectTrigger className="h-12 rounded-lg border-2 border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 px-4 shadow-sm">
                 <SelectValue placeholder={props.placeholder} />
               </SelectTrigger>
             </FormControl>
-            <SelectContent className="shad-select-content">
+            <SelectContent className="bg-white border-2 border-gray-200 rounded-lg shadow-lg">
               {props.children}
             </SelectContent>
           </Select>
@@ -180,13 +160,15 @@ const CustomFormField = (props: CustomProps) => {
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem className="flex-1">
+        <FormItem className={`flex-1 ${props.fieldType === FormFieldType.PHONE_INPUT ? 'relative' : ''}`}>
           {props.fieldType !== FormFieldType.CHECKBOX && label && (
-            <FormLabel className="shad-input-label">{label}</FormLabel>
+            <FormLabel className={`text-gray-700 font-medium text-sm mb-2 block ${props.fieldType === FormFieldType.PHONE_INPUT ? 'relative z-0' : ''}`}>
+              {label}
+            </FormLabel>
           )}
           <RenderInput field={field} props={props} />
 
-          <FormMessage className="shad-error" />
+          <FormMessage className="text-red-600 text-sm mt-1.5" />
         </FormItem>
       )}
     />
