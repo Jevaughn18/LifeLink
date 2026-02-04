@@ -1,14 +1,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "sonner";
 
 import { Form } from "@/components/ui/form";
-import { checkEmailVerificationStatus } from "@/lib/actions/verification.actions";
 
 import "react-phone-number-input/style.css";
 import CustomFormField, { FormFieldType } from "../CustomFormField";
@@ -20,7 +18,6 @@ const LoginFormValidation = z.object({
 });
 
 export const PatientLoginForm = () => {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof LoginFormValidation>>({
@@ -47,9 +44,11 @@ export const PatientLoginForm = () => {
 
       const data = await response.json();
 
-      if (data.success && data.patientId) {
+      if (data.success) {
         toast.success("Login successful! Redirecting...");
-        router.push(`/patients/${data.patientId}/dashboard`);
+        // Full-page navigation so the session cookie set by the authenticate
+        // response is guaranteed to be included in the next request.
+        window.location.href = "/dashboard";
       } else {
         toast.error(data.error || "Invalid email or password.");
       }

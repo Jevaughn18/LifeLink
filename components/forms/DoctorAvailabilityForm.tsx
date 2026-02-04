@@ -23,6 +23,19 @@ import CustomFormField, { FormFieldType } from "../CustomFormField";
 import SubmitButton from "../SubmitButton";
 import { Form } from "../ui/form";
 
+const TIME_SLOTS = (() => {
+  const slots: { value: string; label: string }[] = [];
+  for (let h = 6; h <= 22; h++) {
+    for (const m of [0, 30]) {
+      const value = `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+      const period = h >= 12 ? "PM" : "AM";
+      const displayH = h % 12 || 12;
+      slots.push({ value, label: `${displayH}:${m.toString().padStart(2, "0")} ${period}` });
+    }
+  }
+  return slots;
+})();
+
 const DAYS_OF_WEEK = [
   "Monday",
   "Tuesday",
@@ -207,24 +220,36 @@ export const DoctorAvailabilityForm = ({
               Start Time <span className="text-red-500">*</span>
             </label>
             <CustomFormField
-              fieldType={FormFieldType.INPUT}
+              fieldType={FormFieldType.SELECT}
               control={form.control}
               name="startTime"
               label=""
-              placeholder="09:00"
-            />
+              placeholder="Select start time"
+            >
+              {TIME_SLOTS.map((slot) => (
+                <SelectItem key={slot.value} value={slot.value}>
+                  {slot.label}
+                </SelectItem>
+              ))}
+            </CustomFormField>
           </div>
           <div className="space-y-3">
             <label className={labelClass}>
               End Time <span className="text-red-500">*</span>
             </label>
             <CustomFormField
-              fieldType={FormFieldType.INPUT}
+              fieldType={FormFieldType.SELECT}
               control={form.control}
               name="endTime"
               label=""
-              placeholder="17:00"
-            />
+              placeholder="Select end time"
+            >
+              {TIME_SLOTS.map((slot) => (
+                <SelectItem key={slot.value} value={slot.value}>
+                  {slot.label}
+                </SelectItem>
+              ))}
+            </CustomFormField>
           </div>
         </div>
 

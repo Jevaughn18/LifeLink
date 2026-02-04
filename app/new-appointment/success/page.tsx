@@ -1,6 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { CheckCircle2, Calendar, User, ArrowRight } from "lucide-react";
+import { cookies } from "next/headers";
+import { verifyToken } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 import { Doctors } from "@/constants";
 import { getAppointment } from "@/lib/actions/appointment.actions";
@@ -8,8 +11,15 @@ import { formatDateTime } from "@/lib/utils";
 
 const RequestSuccess = async ({
   searchParams,
-  params: { userId },
-}: SearchParamProps) => {
+}: {
+  searchParams?: { appointmentId?: string };
+}) => {
+  const store = await cookies();
+  const token = store.get("session")?.value;
+  const user = token ? verifyToken(token) : null;
+
+  if (!user) redirect("/login");
+
   const appointmentId = (searchParams?.appointmentId as string) || "";
   const appointment = await getAppointment(appointmentId);
 
@@ -19,7 +29,7 @@ const RequestSuccess = async ({
         <div className="text-center">
           <p className="text-gray-600">Appointment not found</p>
           <Link
-            href={`/patients/${userId}/dashboard`}
+            href="/dashboard"
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white transition-all hover:bg-blue-700 mt-4"
           >
             Go to Dashboard
@@ -103,14 +113,14 @@ const RequestSuccess = async ({
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
-              href={`/patients/${userId}/dashboard`}
+              href="/dashboard"
               className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white transition-all hover:bg-blue-700 shadow-lg hover:shadow-xl"
             >
               Go to Dashboard
               <ArrowRight className="h-5 w-5" />
             </Link>
             <Link
-              href={`/patients/${userId}/new-appointment`}
+              href="/new-appointment"
               className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-3 text-base font-semibold text-gray-900 dark:text-white transition-all hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Book Another

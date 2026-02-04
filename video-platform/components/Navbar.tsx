@@ -1,10 +1,14 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
-import { SignedIn, UserButton } from '@clerk/nextjs';
 
+import { useAppUser } from '@/providers/UserProvider';
 import MobileNav from './MobileNav';
 
 const Navbar = () => {
+  const { userName } = useAppUser();
+
   return (
     <nav className="flex-between fixed z-50 w-full bg-dark-1 px-6 py-4 lg:px-10">
       <Link href="/" className="flex items-center gap-1">
@@ -20,10 +24,9 @@ const Navbar = () => {
         </p>
       </Link>
       <div className="flex-between gap-5">
-        <SignedIn>
-          <UserButton afterSignOutUrl="/sign-in" />
-        </SignedIn>
-
+        {userName && (
+          <span className="text-sm font-medium text-white/70">{userName}</span>
+        )}
         <MobileNav />
       </div>
     </nav>

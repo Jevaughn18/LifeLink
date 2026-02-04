@@ -26,35 +26,39 @@ export function AppointmentsSection({ userId }: AppointmentsSectionProps) {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const response = await fetch(`/api/appointments/list?userId=${userId}`);
+        const response = await fetch('/api/appointments/list');
         const data = await response.json();
 
         if (data.success && data.appointments) {
-          const formattedAppointments: Appointment[] = data.appointments.map((apt: any) => {
-            const appointmentDate = new Date(apt.schedule);
-            const today = new Date();
-            const isToday = appointmentDate.toDateString() === today.toDateString();
-            const isPassed = apt.appointment_status === 'passed';
+          const today = new Date();
+          const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-            return {
-              id: apt.id,
-              doctor: apt.primary_physician || "Doctor",
-              specialty: apt.reason || "General",
-              date: isToday
-                ? "Today"
-                : appointmentDate.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  }),
-              time: appointmentDate.toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "2-digit",
-                hour12: true,
-              }),
-              type: "in-person" as const,
-              status: isPassed ? "passed" : (isToday ? "today" : "upcoming"),
-            };
-          });
+          const formattedAppointments: Appointment[] = data.appointments
+            .map((apt: any) => {
+              const appointmentDate = new Date(apt.schedule);
+              const isToday = appointmentDate.toDateString() === today.toDateString();
+              const isPassed = apt.appointment_status === 'passed' || (!isToday && appointmentDate < startOfToday);
+
+              return {
+                id: apt.id,
+                doctor: apt.primary_physician || "Doctor",
+                specialty: apt.reason || "General",
+                date: isToday
+                  ? "Today"
+                  : appointmentDate.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    }),
+                time: appointmentDate.toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                }),
+                type: "in-person" as const,
+                status: isPassed ? "passed" : (isToday ? "today" : "upcoming"),
+              };
+            })
+            .filter((apt) => apt.status !== "passed");
 
           setAppointments(formattedAppointments);
         }
@@ -84,7 +88,7 @@ export function AppointmentsSection({ userId }: AppointmentsSectionProps) {
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Your upcoming visits</p>
         </div>
         <Link
-          href={`/patients/${userId}/new-appointment`}
+          href="/new-appointment"
           className="flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
         >
           Book new <ArrowRight className="h-4 w-4" />
@@ -96,7 +100,7 @@ export function AppointmentsSection({ userId }: AppointmentsSectionProps) {
           <div className="text-center py-8">
             <p className="text-gray-500 dark:text-gray-400 mb-4">No upcoming appointments</p>
             <Link
-              href={`/patients/${userId}/new-appointment`}
+              href="/new-appointment"
               className="inline-flex items-center gap-2 rounded-xl bg-blue-600 dark:bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-transform hover:scale-105"
             >
               Book your first appointment
@@ -110,39 +114,23 @@ export function AppointmentsSection({ userId }: AppointmentsSectionProps) {
                 "group flex items-center gap-4 rounded-xl border p-4 transition-all hover:shadow-md",
                 apt.status === "today"
                   ? "border-2 border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-500/10"
-                  : apt.status === "passed"
-                  ? "border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 opacity-75"
                   : "border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
               )}
             >
-              <div
-                className={cn(
-                  "flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl",
-                  apt.type === "virtual"
-                    ? "bg-blue-100 dark:bg-blue-500/20"
-                    : apt.status === "passed"
-                    ? "bg-gray-200 dark:bg-gray-700"
-                    : "bg-blue-100 dark:bg-blue-500/20"
-                )}
-              >
+              <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-500/20">
                 {apt.type === "virtual" ? (
                   <Video className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 ) : (
-                  <MapPin className={cn("h-6 w-6", apt.status === "passed" ? "text-gray-400 dark:text-gray-500" : "text-blue-600 dark:text-blue-400")} />
+                  <MapPin className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 )}
               </div>
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className={cn("font-medium", apt.status === "passed" ? "text-gray-500 dark:text-gray-400" : "text-gray-900 dark:text-white")}>{apt.doctor}</h3>
+                  <h3 className="font-medium text-gray-900 dark:text-white">{apt.doctor}</h3>
                   {apt.status === "today" && (
                     <span className="rounded-full bg-blue-600 px-2 py-0.5 text-xs font-medium text-white shadow-sm">
                       Today
-                    </span>
-                  )}
-                  {apt.status === "passed" && (
-                    <span className="rounded-full bg-gray-400 px-2 py-0.5 text-xs font-medium text-white">
-                      Passed
                     </span>
                   )}
                 </div>

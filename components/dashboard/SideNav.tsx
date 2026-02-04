@@ -50,16 +50,18 @@ interface SideNavProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
   patient: any;
+  appointmentBadge?: number;
+  recordsBadge?: number;
 }
 
-export function SideNav({ activeSection, onSectionChange, patient }: SideNavProps) {
+export function SideNav({ activeSection, onSectionChange, patient, appointmentBadge, recordsBadge }: SideNavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
 
   const navItems = [
     { id: "overview", icon: LayoutGrid, label: "Overview" },
-    { id: "appointments", icon: Calendar, label: "Appointments", badge: 2 },
-    { id: "records", icon: FolderOpen, label: "Records" },
+    { id: "appointments", icon: Calendar, label: "Appointments", badge: appointmentBadge || undefined },
+    { id: "records", icon: FolderOpen, label: "Records", badge: recordsBadge || undefined },
     { id: "notifications", icon: Bell, label: "Notifications", badge: 4 },
     { id: "settings", icon: Settings, label: "Settings" },
   ];
@@ -121,7 +123,7 @@ export function SideNav({ activeSection, onSectionChange, patient }: SideNavProp
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium text-gray-900 dark:text-white">{patient?.name || "Patient"}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{patient?.email || ""}</p>
+                <p className="truncate text-sm text-gray-500 dark:text-gray-400">{patient?.email || ""}</p>
               </div>
             </div>
           </div>

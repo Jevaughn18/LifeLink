@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { EmailVerificationForm } from "@/components/forms/EmailVerificationForm";
 import { createUser } from "@/lib/actions/patient.actions";
 import { checkEmailVerificationStatus } from "@/lib/actions/verification.actions";
+import { setPendingRegistrationCookie } from "@/lib/auth.actions";
 
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
@@ -32,17 +33,8 @@ export default function VerifyEmailPage() {
           });
 
           if (newUser) {
-            // Store temp user ID in verification record
-            await fetch('/api/store-temp-user', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                email: status.verificationData.email,
-                tempUserId: newUser.$id
-              })
-            });
-
-            router.push(`/patients/${newUser.$id}/register`);
+            await setPendingRegistrationCookie(status.verificationData.email, status.verificationData.name);
+            router.push("/register/complete");
           }
         } else {
           // Email not verified yet - show verification form
@@ -67,18 +59,8 @@ export default function VerifyEmailPage() {
       });
 
       if (newUser) {
-        // Store temp user ID in verification record for later retrieval
-        await fetch('/api/store-temp-user', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: data.email,
-            tempUserId: newUser.$id
-          })
-        });
-
-        // Redirect to registration page with verified email
-        router.push(`/patients/${newUser.$id}/register`);
+        await setPendingRegistrationCookie(data.email, data.name);
+        router.push("/register/complete");
       }
     } catch (error) {
       console.error("Error creating user:", error);

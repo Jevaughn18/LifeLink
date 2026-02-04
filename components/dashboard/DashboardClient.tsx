@@ -4,11 +4,11 @@ import { useState, useEffect } from "react";
 import { SideNav } from "./SideNav";
 import { HealthMetrics } from "./HealthMetrics";
 import { AppointmentsSection } from "./AppointmentsSection";
-import { RecentRecords } from "./RecentRecords";
 import { InsightsCard } from "./InsightsCard";
 import { QuickActionsBar } from "./QuickActionsBar";
 import { HealthBotChat } from "./HealthBotChat";
 import { VoiceAssistantModal } from "./VoiceAssistantModal";
+import { RecordsView } from "./RecordsView";
 import { Bell, Search } from "lucide-react";
 import { ThemeToggle } from "../ThemeToggle";
 
@@ -27,7 +27,7 @@ export function DashboardClient({ patient, userId }: DashboardClientProps) {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const response = await fetch(`/api/appointments/list?userId=${userId}`);
+        const response = await fetch('/api/appointments/list');
         const data = await response.json();
         if (data.success) {
           setAppointments(data.appointments || []);
@@ -49,12 +49,26 @@ export function DashboardClient({ patient, userId }: DashboardClientProps) {
   const patientName = patient.name || "Patient";
   const firstName = patientName.split(" ")[0];
 
+  // Derive badge counts from raw appointment data
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const upcomingCount = appointments.filter((apt: any) => {
+    const aptDate = new Date(apt.schedule);
+    return apt.appointment_status !== 'passed' && aptDate >= startOfToday;
+  }).length;
+  const pastCount = appointments.filter((apt: any) => {
+    const aptDate = new Date(apt.schedule);
+    return apt.appointment_status === 'passed' || aptDate < startOfToday;
+  }).length;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black transition-colors">
       <SideNav
         activeSection={activeSection}
         onSectionChange={setActiveSection}
         patient={patient}
+        appointmentBadge={upcomingCount}
+        recordsBadge={pastCount}
       />
 
       {/* Main Content */}
@@ -88,39 +102,43 @@ export function DashboardClient({ patient, userId }: DashboardClientProps) {
             </div>
           </header>
 
-          {/* Quick Actions */}
-          <div className="mb-8 animate-float-in stagger-2">
-            <QuickActionsBar
-              userId={userId}
-              onMessageDoctor={() => setShowHealthBot(true)}
-              onVoiceAssistant={() => setShowVoiceAssistant(true)}
-            />
-          </div>
-
-          {/* Health Metrics */}
-          <div className="mb-8">
-            <HealthMetrics patient={patient} userId={userId} />
-          </div>
-
-          {/* Main Grid */}
-          <div className="grid gap-6 lg:grid-cols-3">
-            {/* Left Column */}
-            <div className="space-y-6 lg:col-span-2">
-              <div className="animate-float-in stagger-3">
-                <AppointmentsSection userId={userId} />
+          {activeSection === "records" ? (
+            <RecordsView appointments={appointments} />
+          ) : (
+            <>
+              {/* Quick Actions */}
+              <div className="mb-8 animate-float-in stagger-2">
+                <QuickActionsBar
+                  userId={userId}
+                  patientName={patientName}
+                  onMessageDoctor={() => setShowHealthBot(true)}
+                  onVoiceAssistant={() => setShowVoiceAssistant(true)}
+                />
               </div>
-              <div className="animate-float-in stagger-4">
-                <RecentRecords patient={patient} appointments={appointments} />
-              </div>
-            </div>
 
-            {/* Right Column */}
-            <div className="space-y-6 lg:col-span-1">
-              <div className="animate-float-in stagger-3">
-                <InsightsCard patient={patient} userId={userId} appointments={appointments} />
+              {/* Health Metrics */}
+              <div className="mb-8">
+                <HealthMetrics patient={patient} userId={userId} />
               </div>
-            </div>
-          </div>
+
+              {/* Main Grid */}
+              <div className="grid gap-6 lg:grid-cols-3">
+                {/* Left Column */}
+                <div className="space-y-6 lg:col-span-2">
+                  <div className="animate-float-in stagger-3">
+                    <AppointmentsSection userId={userId} />
+                  </div>
+                </div>
+
+                {/* Right Column */}
+                <div className="space-y-6 lg:col-span-1">
+                  <div className="animate-float-in stagger-3">
+                    <InsightsCard patient={patient} userId={userId} appointments={appointments} />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </main>
 

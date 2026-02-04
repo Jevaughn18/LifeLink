@@ -1,6 +1,6 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
+import { useAppUser } from "@/providers/UserProvider";
 import { useStreamVideoClient } from "@stream-io/video-react-sdk";
 import { useRouter } from "next/navigation";
 
@@ -29,16 +29,16 @@ const Table = ({
 
 const PersonalRoom = () => {
   const router = useRouter();
-  const { user } = useUser();
+  const { userId, userName } = useAppUser();
   const client = useStreamVideoClient();
   const { toast } = useToast();
 
-  const meetingId = user?.id;
+  const meetingId = userId;
 
   const { call } = useGetCallById(meetingId!);
 
   const startRoom = async () => {
-    if (!client || !user) return;
+    if (!client || !userId) return;
 
     const newCall = client.call("default", meetingId!);
 
@@ -59,7 +59,7 @@ const PersonalRoom = () => {
     <section className="flex size-full flex-col gap-10 text-white">
       <h1 className="text-xl font-bold lg:text-3xl">Personal Meeting Room</h1>
       <div className="flex w-full flex-col gap-8 xl:max-w-[900px]">
-        <Table title="Topic" description={`${user?.username}'s Meeting Room`} />
+        <Table title="Topic" description={`${userName || 'Your'} Meeting Room`} />
         <Table title="Meeting ID" description={meetingId!} />
         <Table title="Invite Link" description={meetingLink} />
       </div>

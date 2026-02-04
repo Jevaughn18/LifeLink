@@ -11,6 +11,33 @@
  * - Insurance data anonymization
  */
 
+// Sanitizes user-supplied text before it is interpolated into AI prompts.
+// Strips HTML/XML tags, collapses whitespace, enforces a character limit,
+// and removes lines that look like prompt-injection attempts.
+function sanitizeForPrompt(input: string, maxLength = 500): string {
+  if (!input) return '';
+  // Strip HTML / XML tags
+  let s = input.replace(/<[^>]*>/g, '');
+  // Collapse whitespace
+  s = s.replace(/\s+/g, ' ').trim();
+  // Remove lines starting with common injection prefixes
+  const injectionPrefixes = [
+    'ignore previous', 'ignore all', 'disregard', 'forget everything',
+    'you are now', 'act as', 'pretend', 'new instruction', 'system:',
+    '[system]', '###', '<<<', 'prompt:', 'jailbreak',
+  ];
+  s = s
+    .split(/[.\n]/)
+    .filter((line) => {
+      const lower = line.trim().toLowerCase();
+      return !injectionPrefixes.some((prefix) => lower.startsWith(prefix));
+    })
+    .join(' ')
+    .trim();
+  // Enforce length cap
+  return s.slice(0, maxLength);
+}
+
 export interface SymptomAnalysisResult {
   symptom_category: string;
   keywords: string[];
@@ -121,7 +148,8 @@ async function parseAndRepairJson(text: string): Promise<any> {
 export async function analyzeSymptoms(
   symptomText: string
 ): Promise<SymptomAnalysisResult> {
-  console.log('[DEBUG] Starting analyzeSymptoms for text:', symptomText);
+  const sanitized = sanitizeForPrompt(symptomText);
+  console.log('[DEBUG] Starting analyzeSymptoms for text:', sanitized);
   try {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -152,7 +180,7 @@ Respond ONLY with valid JSON. No explanatory text before or after.`,
             role: 'user',
             content: `Analyze this patient symptom description:
 
-"${symptomText}"
+"${sanitized}"
 
 Provide structured output in this EXACT JSON format:
 {
@@ -220,10 +248,10 @@ export async function analyzeMedicalHistory(
 ): Promise<MedicalHistoryAnalysis> {
   try {
     const medicalData = `
-Allergies: ${allergies || 'None reported'}
-Current Medications: ${currentMedication || 'None reported'}
-Family Medical History: ${familyHistory || 'None reported'}
-Past Medical History: ${pastHistory || 'None reported'}
+Allergies: ${sanitizeForPrompt(allergies || '', 200) || 'None reported'}
+Current Medications: ${sanitizeForPrompt(currentMedication || '', 200) || 'None reported'}
+Family Medical History: ${sanitizeForPrompt(familyHistory || '', 300) || 'None reported'}
+Past Medical History: ${sanitizeForPrompt(pastHistory || '', 300) || 'None reported'}
     `.trim();
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {

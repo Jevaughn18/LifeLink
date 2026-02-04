@@ -12,28 +12,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Query patient by email
+    // Check existence only — no PII or IDs in the response
     const patient = await queryOne<any>(
-      'SELECT id, name, email, phone FROM patients WHERE email = ?',
+      'SELECT 1 FROM patients WHERE email = ?',
       [email]
     );
 
-    if (!patient) {
-      return NextResponse.json(
-        { success: false, error: 'Patient not found' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      patientId: patient.id,
-      patient: {
-        name: patient.name,
-        email: patient.email,
-        phone: patient.phone,
-      },
-    });
+    return NextResponse.json({ exists: !!patient });
   } catch (error) {
     console.error('Error fetching patient by email:', error);
     return NextResponse.json(

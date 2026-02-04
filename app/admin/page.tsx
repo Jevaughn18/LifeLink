@@ -12,9 +12,10 @@ import { columns } from "@/components/table/columns";
 import { DataTable } from "@/components/table/DataTable";
 import { getRecentAppointmentList } from "@/lib/actions/appointment.actions";
 import { getDoctorAvailability } from "@/lib/actions/doctor-availability.actions";
-import { availabilityColumns } from "@/components/table/availabilityColumns";
+import { DoctorAvailabilityTable } from "@/components/table/DoctorAvailabilityTable";
 import { DoctorAvailabilityModal } from "@/components/DoctorAvailabilityModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { InstantConsultBanner } from "@/components/dashboard/InstantConsultBanner";
 
 const AdminPage = async () => {
   const appointments = await getRecentAppointmentList();
@@ -55,6 +56,9 @@ const AdminPage = async () => {
             Manage appointments and oversee patient care
           </p>
         </section>
+
+        {/* Live instant-consult notifications */}
+        <InstantConsultBanner />
 
         {/* Stats Grid */}
         <section className="grid gap-6 md:grid-cols-3">
@@ -131,7 +135,7 @@ const AdminPage = async () => {
             </div>
           </div>
           <div className="p-6">
-            <DataTable columns={availabilityColumns} data={availability.documents} />
+            <DoctorAvailabilityTable data={availability.documents} />
           </div>
         </section>
 

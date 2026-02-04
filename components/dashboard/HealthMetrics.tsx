@@ -58,7 +58,7 @@ export function HealthMetrics({ patient, userId }: HealthMetricsProps) {
     // Fetch real appointment data
     const fetchAppointmentStats = async () => {
       try {
-        const response = await fetch(`/api/appointments/stats?userId=${userId}`);
+        const response = await fetch('/api/appointments/stats');
         const data = await response.json();
 
         if (data.success) {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/database/mysql.config';
 import { Doctors } from '@/constants';
 import { analyzeSymptoms } from '@/lib/ai/gemini-service';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY_GEMINI;
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
@@ -375,11 +376,17 @@ async function executeFunctionCall(functionName: string, args: any, userId: stri
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, userId, conversationHistory } = await request.json();
+    const user = getAuthenticatedUser(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const userId = user.patientId;
 
-    if (!message || !userId) {
+    const { message, conversationHistory } = await request.json();
+
+    if (!message) {
       return NextResponse.json(
-        { error: 'Message and user ID are required' },
+        { error: 'Message is required' },
         { status: 400 }
       );
     }

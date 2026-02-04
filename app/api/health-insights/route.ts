@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/database/mysql.config';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const userId = searchParams.get('userId');
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'User ID is required' },
-        { status: 400 }
-      );
+    const user = getAuthenticatedUser(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const patientId = userId;
+    const patientId = user.patientId;
 
     // Get patient's recent appointments with AI analysis
     const appointments = await query<any>(
@@ -24,14 +19,6 @@ export async function GET(request: NextRequest) {
        LIMIT 5`,
       [patientId]
     );
-
-    console.log('=== HEALTH INSIGHTS DEBUG ===');
-    console.log('Patient ID:', patientId);
-    console.log('Appointments found:', appointments.length);
-    if (appointments.length > 0) {
-      console.log('First appointment:', appointments[0]);
-      console.log('AI analysis data:', appointments[0].ai_symptom_analysis);
-    }
 
     const insights = [];
 

@@ -18,6 +18,7 @@ import {
 } from "@/constants";
 import { registerPatient } from "@/lib/actions/patient.actions";
 import { PatientFormValidation } from "@/lib/validation";
+import { setSessionCookie } from "@/lib/auth.actions";
 
 import "react-datepicker/dist/react-datepicker.css";
 import "react-phone-number-input/style.css";
@@ -83,8 +84,8 @@ const RegisterForm = ({ user }: { user: User }) => {
       console.log("registerPatient response:", newPatient);
 
       if (newPatient) {
-        console.log("Redirecting to dashboard for patient:", newPatient.$id);
-        router.push(`/patients/${newPatient.$id}/dashboard`);
+        await setSessionCookie(newPatient.$id, patient.email, patient.name);
+        router.push("/dashboard");
       } else {
         console.error("No patient returned from registerPatient");
       }

@@ -120,22 +120,49 @@ export const registerPatient = async ({
         const fileName = identificationDocument.get("fileName") as string;
 
         if (blobFile && fileName) {
-          // Generate unique file ID
-          fileId = generateId();
-          const fileExtension = path.extname(fileName);
-          const uniqueFileName = `${fileId}${fileExtension}`;
-          const filePath = path.join(UPLOAD_DIR, uniqueFileName);
+          // Validate extension against whitelist
+          const allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png'];
+          const fileExtension = path.extname(fileName).toLowerCase();
+          if (!allowedExtensions.includes(fileExtension)) {
+            throw new Error(`File type "${fileExtension}" is not allowed. Accepted: PDF, JPG, PNG`);
+          }
 
-          // Convert Blob to Buffer and save
+          // Enforce 5 MB size limit
+          const MAX_FILE_SIZE = 5 * 1024 * 1024;
+          if (blobFile.size > MAX_FILE_SIZE) {
+            throw new Error('File exceeds the 5 MB size limit');
+          }
+
+          // Convert Blob to Buffer for magic-byte validation
           const arrayBuffer = await blobFile.arrayBuffer();
           const buffer = Buffer.from(arrayBuffer);
+
+          // Validate magic bytes
+          const magicBytes: Record<string, Buffer[]> = {
+            '.pdf':  [Buffer.from([0x25, 0x50, 0x44, 0x46])],                        // %PDF
+            '.jpg':  [Buffer.from([0xFF, 0xD8, 0xFF])],
+            '.jpeg': [Buffer.from([0xFF, 0xD8, 0xFF])],
+            '.png':  [Buffer.from([0x89, 0x50, 0x4E, 0x47])],
+          };
+          const expectedSignatures = magicBytes[fileExtension];
+          if (expectedSignatures) {
+            const matches = expectedSignatures.some((sig) => buffer.slice(0, sig.length).equals(sig));
+            if (!matches) {
+              throw new Error('File content does not match the declared file type');
+            }
+          }
+
+          // Generate unique file ID and save
+          fileId = generateId();
+          const uniqueFileName = `${fileId}${fileExtension}`;
+          const filePath = path.join(UPLOAD_DIR, uniqueFileName);
           await fs.writeFile(filePath, new Uint8Array(buffer));
 
           fileUrl = `/uploads/documents/${uniqueFileName}`;
         }
       } catch (fileError) {
         console.error('File upload error:', fileError);
-        // Continue without file if upload fails
+        throw fileError;
       }
     }
 

@@ -1,17 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createAppointment } from '@/lib/actions/appointment.actions';
+import { getAuthenticatedUser } from '@/lib/auth';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { userId, doctorName, date, reason } = body;
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Patient ID is required' },
-        { status: 400 }
-      );
+    const user = getAuthenticatedUser(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const body = await request.json();
+    const { doctorName, date, reason } = body;
 
     if (!date) {
       return NextResponse.json(
@@ -22,7 +21,7 @@ export async function POST(request: Request) {
 
     // Create the appointment
     const appointment = await createAppointment({
-      patient: userId,
+      patient: user.patientId,
       primaryPhysician: doctorName || 'Any Available Doctor',
       schedule: new Date(date),
       status: 'pending',

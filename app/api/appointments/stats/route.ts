@@ -1,20 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/database/mysql.config';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const userId = searchParams.get('userId');
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'User ID is required' },
-        { status: 400 }
-      );
+    const user = getAuthenticatedUser(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    // userId is actually the patient ID in your system
-    const patientId = userId;
+    const patientId = user.patientId;
 
     // Get total appointments
     const totalResult = await query<any>(

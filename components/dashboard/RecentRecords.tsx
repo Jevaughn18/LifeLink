@@ -35,16 +35,23 @@ export function RecentRecords({ patient, appointments }: RecentRecordsProps) {
     });
   }
 
-  // Add upcoming appointments
+  // Add past appointments
   if (appointments && appointments.length > 0) {
-    const upcoming = appointments
-      .filter((apt: any) => apt.status === 'scheduled' || apt.status === 'pending')
-      .slice(0, 1);
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
 
-    upcoming.forEach((apt: any, idx: number) => {
+    const past = appointments
+      .filter((apt: any) => {
+        const aptDate = new Date(apt.schedule);
+        return apt.appointment_status === 'passed' || aptDate < startOfToday;
+      })
+      .sort((a: any, b: any) => new Date(b.schedule).getTime() - new Date(a.schedule).getTime())
+      .slice(0, 3);
+
+    past.forEach((apt: any, idx: number) => {
       records.push({
-        id: `apt-${idx}`,
-        title: `Appointment with ${apt.primaryPhysician}`,
+        id: `past-apt-${idx}`,
+        title: `Visit with ${apt.primary_physician || 'Doctor'}`,
         type: "appointment",
         date: formatDateTime(apt.schedule).dateOnly,
         value: formatDateTime(apt.schedule).timeOnly
@@ -125,8 +132,8 @@ export function RecentRecords({ patient, appointments }: RecentRecordsProps) {
     <div className="rounded-2xl bg-white dark:bg-black p-6 shadow-sm border border-gray-200 dark:border-gray-800 transition-all hover:shadow-md">
       <div className="mb-5 flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Health Overview</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Your active health tracking</p>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Records</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Past visits & health tracking</p>
         </div>
         <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
       </div>

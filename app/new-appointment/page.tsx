@@ -1,10 +1,19 @@
-import { AppointmentForm } from "@/components/forms/AppointmentForm";
+import { cookies } from "next/headers";
+import { verifyToken } from "@/lib/auth";
 import { getPatient } from "@/lib/actions/patient.actions";
+import { AppointmentForm } from "@/components/forms/AppointmentForm";
 import { ArrowLeft, Calendar } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
-const Appointment = async ({ params: { userId } }: SearchParamProps) => {
-  const patient = await getPatient(userId);
+const Appointment = async () => {
+  const store = await cookies();
+  const token = store.get("session")?.value;
+  const user = token ? verifyToken(token) : null;
+
+  if (!user) redirect("/login");
+
+  const patient = await getPatient(user.patientId);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-black dark:to-gray-900 transition-colors">
@@ -12,7 +21,7 @@ const Appointment = async ({ params: { userId } }: SearchParamProps) => {
       <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-800/50 sticky top-0 z-10 transition-colors">
         <div className="mx-auto max-w-5xl px-6 py-4">
           <Link
-            href={`/patients/${userId}/dashboard`}
+            href="/dashboard"
             className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors group"
           >
             <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
@@ -39,7 +48,7 @@ const Appointment = async ({ params: { userId } }: SearchParamProps) => {
                 </p>
               </div>
             </div>
-            
+
             {/* Progress Indicator */}
             <div className="flex items-center gap-2 pt-4 border-t border-gray-200 dark:border-gray-800">
               <div className="flex items-center gap-2">
@@ -63,7 +72,7 @@ const Appointment = async ({ params: { userId } }: SearchParamProps) => {
           <div className="mt-8">
             <AppointmentForm
               patientId={patient?.$id}
-              userId={userId}
+              userId={user.patientId}
               type="create"
             />
           </div>
