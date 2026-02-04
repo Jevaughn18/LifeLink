@@ -114,24 +114,31 @@ SelectLabel.displayName = SelectPrimitive.Label.displayName;
 const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Item
-    ref={ref}
-    className={cn(
-      "relative flex w-full cursor-pointer select-none items-center rounded-md py-2.5 pl-10 pr-3 text-sm text-gray-900 outline-none hover:bg-blue-50 focus:bg-blue-50 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 transition-colors",
-      className
-    )}
-    {...props}
-  >
-    <span className="absolute left-3 flex size-4 items-center justify-center">
-      <SelectPrimitive.ItemIndicator>
-        <Check className="size-4 text-blue-600" />
-      </SelectPrimitive.ItemIndicator>
-    </span>
+>(({ className, children, ...props }, ref) => {
+  // Check if parent SelectContent has light mode class
+  const isLightMode = typeof document !== 'undefined' && 
+    document.querySelector('.bg-white.border-gray-200') !== null;
+  
+  const itemClass = isLightMode
+    ? "relative flex w-full cursor-pointer select-none items-center rounded-md py-2.5 pl-10 pr-3 text-sm text-gray-900 outline-none hover:bg-blue-50 focus:bg-blue-50 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 transition-colors"
+    : "relative flex w-full cursor-pointer select-none items-center rounded-md py-2.5 pl-10 pr-3 text-sm text-gray-200 outline-none hover:bg-gray-700 focus:bg-gray-700 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 transition-colors";
+  
+  return (
+    <SelectPrimitive.Item
+      ref={ref}
+      className={cn(itemClass, className)}
+      {...props}
+    >
+      <span className="absolute left-3 flex size-4 items-center justify-center">
+        <SelectPrimitive.ItemIndicator>
+          <Check className={`size-4 ${isLightMode ? 'text-blue-600' : 'text-blue-400'}`} />
+        </SelectPrimitive.ItemIndicator>
+      </span>
 
-    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
-  </SelectPrimitive.Item>
-));
+      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    </SelectPrimitive.Item>
+  );
+});
 SelectItem.displayName = SelectPrimitive.Item.displayName;
 
 const SelectSeparator = React.forwardRef<

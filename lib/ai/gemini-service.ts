@@ -75,8 +75,8 @@ async function parseAndRepairJson(text: string): Promise<any> {
             {
               role: 'system',
               content: `You are a JSON repair utility. The user will provide a string that failed to parse as JSON.
-Your task is to correct any syntax errors and return ONLY the valid JSON object.
-Do not include any explanatory text, markdown, or anything other than the raw, corrected JSON.`,
+                        Your task is to correct any syntax errors and return ONLY the valid JSON object.
+                        Do not include any explanatory text, markdown, or anything other than the raw, corrected JSON.`,
             },
             {
               role: 'user',
@@ -137,7 +137,7 @@ export async function analyzeSymptoms(
           {
             role: 'system',
             content: `You are a healthcare triage assistant for LifeLink, a patient management system.
-Your job is to analyze patient symptom descriptions and provide structured output for healthcare professionals.
+          Your job is to analyze patient symptom descriptions and provide structured output for healthcare professionals.
 
 IMPORTANT RULES:
 - DO NOT diagnose diseases or medical conditions

@@ -130,3 +130,30 @@ export function getAppointmentSchema(type: string) {
       return ScheduleAppointmentSchema;
   }
 }
+
+// Doctor Availability Validation
+const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] as const;
+
+export const DoctorAvailabilityFormValidation = z.object({
+  doctorName: z.string().min(2, "Select a doctor"),
+  daysOfWeek: z.array(z.enum(DAYS_OF_WEEK)).min(1, "Select at least one day"),
+  startTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Invalid time format. Use 24-hour format (e.g., 09:00, 17:00)"),
+  endTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Invalid time format. Use 24-hour format (e.g., 09:00, 17:00)"),
+  slotDurationMinutes: z.coerce.number().min(15, "Slot duration must be at least 15 minutes").max(240, "Slot duration cannot exceed 4 hours"),
+}).refine((data) => {
+  const [sh, sm] = data.startTime.split(':').map(Number);
+  const [eh, em] = data.endTime.split(':').map(Number);
+  return (eh * 60 + em) > (sh * 60 + sm);
+}, { message: "End time must be after start time", path: ["endTime"] });
+
+export const EditDoctorAvailabilityFormValidation = z.object({
+  doctorName: z.string().min(2, "Select a doctor"),
+  dayOfWeek: z.enum(DAYS_OF_WEEK),
+  startTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Invalid time format. Use 24-hour format (e.g., 09:00, 17:00)"),
+  endTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Invalid time format. Use 24-hour format (e.g., 09:00, 17:00)"),
+  slotDurationMinutes: z.coerce.number().min(15, "Slot duration must be at least 15 minutes").max(240, "Slot duration cannot exceed 4 hours"),
+}).refine((data) => {
+  const [sh, sm] = data.startTime.split(':').map(Number);
+  const [eh, em] = data.endTime.split(':').map(Number);
+  return (eh * 60 + em) > (sh * 60 + sm);
+}, { message: "End time must be after start time", path: ["endTime"] });

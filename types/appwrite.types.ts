@@ -44,3 +44,31 @@ export interface Appointment extends Models.Document {
   aiHumanApproved?: boolean;
   aiHumanNotes?: string;
 }
+
+export interface DoctorAvailability extends Models.Document {
+  doctorName: string;
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+  slotDurationMinutes: number;
+  isActive: boolean;
+}
+
+export interface CreateAvailabilityParams {
+  doctorName: string;
+  daysOfWeek: string[];
+  startTime: string;
+  endTime: string;
+  slotDurationMinutes: number;
+}
+
+export interface UpdateAvailabilityParams {
+  availabilityId: string;
+  availability: {
+    doctorName: string;
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
+    slotDurationMinutes: number;
+  };
+}

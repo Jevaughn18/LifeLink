@@ -18,7 +18,7 @@ export const columns: ColumnDef<Appointment>[] = [
   {
     header: "#",
     cell: ({ row }) => {
-      return <p className="text-14-medium ">{row.index + 1}</p>;
+      return <p className="text-14-medium text-gray-900 dark:text-gray-200">{row.index + 1}</p>;
     },
   },
   {
@@ -26,7 +26,7 @@ export const columns: ColumnDef<Appointment>[] = [
     header: "Patient",
     cell: ({ row }) => {
       const appointment = row.original;
-      return <p className="text-14-medium ">{appointment.patient.name}</p>;
+      return <p className="text-14-medium text-gray-900 dark:text-gray-200">{appointment.patient.name}</p>;
     },
   },
   {
@@ -47,7 +47,7 @@ export const columns: ColumnDef<Appointment>[] = [
     cell: ({ row }) => {
       const appointment = row.original;
       return (
-        <p className="text-14-regular min-w-[100px]">
+        <p className="text-14-regular min-w-[100px] text-gray-900 dark:text-gray-200">
           {formatDateTime(appointment.schedule).dateTime}
         </p>
       );
@@ -72,7 +72,7 @@ export const columns: ColumnDef<Appointment>[] = [
             height={100}
             className="size-8"
           />
-          <p className="whitespace-nowrap">Dr. {doctor?.name}</p>
+          <p className="whitespace-nowrap text-gray-900 dark:text-gray-200">Dr. {doctor?.name}</p>
         </div>
       );
     },
@@ -88,31 +88,44 @@ export const columns: ColumnDef<Appointment>[] = [
       const aiAnalysis = appointment.aiSymptomAnalysis as SymptomAnalysisResult | null;
 
       if (!aiAnalysis) {
-        return <p className="text-14-regular text-gray-500">No AI data</p>;
+        return <p className="text-14-regular text-gray-500 dark:text-gray-400">No AI data</p>;
       }
 
       return (
         <>
-          <div className="flex flex-col gap-1">
-            <Badge className="bg-blue-600 w-fit">
-              {aiAnalysis.symptom_category}
-            </Badge>
+          <div className="flex flex-col gap-3 min-w-[180px]">
+            <div>
+              <p className="text-xs text-gray-400 mb-1.5 font-medium">Symptom Category</p>
+              <Badge className="bg-blue-600 hover:bg-blue-700 text-white w-fit px-3 py-1.5 text-xs font-medium">
+                {aiAnalysis.symptom_category}
+              </Badge>
+            </div>
             {appointment.aiReviewedBy ? (
               // Has been reviewed
-              appointment.aiHumanApproved ? (
-                <Badge className="bg-green-600 w-fit">✓ Approved</Badge>
-              ) : (
-                <Badge className="bg-red-600 w-fit">✗ Rejected</Badge>
-              )
+              <div>
+                <p className="text-xs text-gray-400 mb-1.5 font-medium">Review Status</p>
+                {appointment.aiHumanApproved ? (
+                  <Badge className="bg-green-600 hover:bg-green-700 text-white w-fit px-3 py-1.5 text-xs font-medium">
+                    ✓ Approved
+                  </Badge>
+                ) : (
+                  <Badge className="bg-red-600 hover:bg-red-700 text-white w-fit px-3 py-1.5 text-xs font-medium">
+                    ✗ Rejected
+                  </Badge>
+                )}
+              </div>
             ) : (
               // Not reviewed yet
-              <Button
-                size="sm"
-                onClick={() => setReviewOpen(true)}
-                className="shad-primary-btn text-xs h-7"
-              >
-                Review
-              </Button>
+              <div>
+                <p className="text-xs text-gray-400 mb-1.5 font-medium">Action Required</p>
+                <Button
+                  size="sm"
+                  onClick={() => setReviewOpen(true)}
+                  className="bg-green-500 hover:bg-green-600 text-white text-xs h-8 px-4 font-medium"
+                >
+                  Review
+                </Button>
+              </div>
             )}
           </div>
           <AIReviewModal

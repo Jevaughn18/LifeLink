@@ -83,8 +83,8 @@ const RegisterForm = ({ user }: { user: User }) => {
       console.log("registerPatient response:", newPatient);
 
       if (newPatient) {
-        console.log("Redirecting to new-appointment for patient:", newPatient.$id);
-        router.push(`/patients/${newPatient.$id}/new-appointment`);
+        console.log("Redirecting to dashboard for patient:", newPatient.$id);
+        router.push(`/patients/${newPatient.$id}/dashboard`);
       } else {
         console.error("No patient returned from registerPatient");
       }

@@ -46,6 +46,9 @@ const config = {
           700: "#ABB8C4",
         },
       },
+      backgroundColor: {
+        'dark-deep': '#000000',
+      },
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],
       },

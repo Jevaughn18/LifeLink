@@ -52,14 +52,14 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="data-table">
-      <Table className="shad-table">
-        <TableHeader className=" bg-dark-200">
+    <div className="w-full overflow-hidden rounded-lg border border-gray-800 dark:border-gray-800 bg-white dark:bg-black">
+      <Table className="w-full">
+        <TableHeader className="bg-gray-100 dark:bg-gray-900/50">
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="shad-table-row-header">
+            <TableRow key={headerGroup.id} className="border-b border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900/30">
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className="h-12 px-4 text-left align-middle font-semibold text-gray-900 dark:text-gray-200">
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -78,10 +78,10 @@ export function DataTable<TData, TValue>({
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                className="shad-table-row"
+                className="border-b border-gray-200 dark:border-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-900/20 transition-colors"
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
+                  <TableCell key={cell.id} className="p-4 text-gray-900 dark:text-gray-200">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -89,43 +89,49 @@ export function DataTable<TData, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No Appointments found
+              <TableCell colSpan={columns.length} className="h-24 text-center text-gray-500 dark:text-gray-400">
+                No records found
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
-      <div className="table-actions">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-          className="shad-gray-btn"
-        >
-          <Image
-            src="/assets/icons/arrow.svg"
-            width={24}
-            height={24}
-            alt="arrow"
-          />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-          className="shad-gray-btn"
-        >
-          <Image
-            src="/assets/icons/arrow.svg"
-            width={24}
-            height={24}
-            alt="arrow "
-            className="rotate-180"
-          />
-        </Button>
+      <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/30 px-4 py-3">
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          Showing {table.getRowModel().rows.length} of {data.length} appointments
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+            className="border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            <Image
+              src="/assets/icons/arrow.svg"
+              width={20}
+              height={20}
+              alt="Previous"
+              className="dark:invert"
+            />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+            className="border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            <Image
+              src="/assets/icons/arrow.svg"
+              width={20}
+              height={20}
+              alt="Next"
+              className="rotate-180 dark:invert"
+            />
+          </Button>
+        </div>
       </div>
     </div>
   );

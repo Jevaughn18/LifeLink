@@ -70,22 +70,22 @@ export function AppointmentsSection({ userId }: AppointmentsSectionProps) {
 
   if (loading) {
     return (
-      <div className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100">
-        <p className="text-gray-500">Loading appointments...</p>
+      <div className="rounded-2xl bg-white dark:bg-black p-6 shadow-sm border border-gray-100 dark:border-gray-800 transition-colors">
+        <p className="text-gray-500 dark:text-gray-400">Loading appointments...</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100">
+    <div className="rounded-2xl bg-white dark:bg-black p-6 shadow-sm border border-gray-200 dark:border-gray-800 transition-all hover:shadow-md">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Appointments</h2>
-          <p className="mt-1 text-sm text-gray-500">Your upcoming visits</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Appointments</h2>
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Your upcoming visits</p>
         </div>
         <Link
           href={`/patients/${userId}/new-appointment`}
-          className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:underline"
+          className="flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
         >
           Book new <ArrowRight className="h-4 w-4" />
         </Link>
@@ -94,10 +94,10 @@ export function AppointmentsSection({ userId }: AppointmentsSectionProps) {
       <div className="space-y-4">
         {appointments.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500 mb-4">No upcoming appointments</p>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">No upcoming appointments</p>
             <Link
               href={`/patients/${userId}/new-appointment`}
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-medium text-white transition-transform hover:scale-105"
+              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 dark:bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-transform hover:scale-105"
             >
               Book your first appointment
             </Link>
@@ -109,30 +109,34 @@ export function AppointmentsSection({ userId }: AppointmentsSectionProps) {
               className={cn(
                 "group flex items-center gap-4 rounded-xl border p-4 transition-all hover:shadow-md",
                 apt.status === "today"
-                  ? "border-blue-200 bg-blue-50"
+                  ? "border-2 border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-500/10"
                   : apt.status === "passed"
-                  ? "border-gray-200 bg-gray-50 opacity-75"
-                  : "border-gray-200"
+                  ? "border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 opacity-75"
+                  : "border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
               )}
             >
               <div
                 className={cn(
-                  "flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl",
-                  apt.type === "virtual" ? "bg-green-100" : apt.status === "passed" ? "bg-gray-200" : "bg-gray-100"
+                  "flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl",
+                  apt.type === "virtual"
+                    ? "bg-blue-100 dark:bg-blue-500/20"
+                    : apt.status === "passed"
+                    ? "bg-gray-200 dark:bg-gray-700"
+                    : "bg-blue-100 dark:bg-blue-500/20"
                 )}
               >
                 {apt.type === "virtual" ? (
-                  <Video className="h-6 w-6 text-green-600" />
+                  <Video className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 ) : (
-                  <MapPin className={cn("h-6 w-6", apt.status === "passed" ? "text-gray-400" : "text-gray-600")} />
+                  <MapPin className={cn("h-6 w-6", apt.status === "passed" ? "text-gray-400 dark:text-gray-500" : "text-blue-600 dark:text-blue-400")} />
                 )}
               </div>
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className={cn("font-medium", apt.status === "passed" ? "text-gray-500" : "text-gray-900")}>{apt.doctor}</h3>
+                  <h3 className={cn("font-medium", apt.status === "passed" ? "text-gray-500 dark:text-gray-400" : "text-gray-900 dark:text-white")}>{apt.doctor}</h3>
                   {apt.status === "today" && (
-                    <span className="rounded-full bg-blue-600 px-2 py-0.5 text-xs font-medium text-white">
+                    <span className="rounded-full bg-blue-600 px-2 py-0.5 text-xs font-medium text-white shadow-sm">
                       Today
                     </span>
                   )}
@@ -142,8 +146,8 @@ export function AppointmentsSection({ userId }: AppointmentsSectionProps) {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-500">{apt.specialty}</p>
-                <div className="mt-2 flex items-center gap-4 text-sm text-gray-500">
+                <p className="text-sm text-gray-600 dark:text-gray-400">{apt.specialty}</p>
+                <div className="mt-2 flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3.5 w-3.5" />
                     {apt.date}
@@ -156,7 +160,7 @@ export function AppointmentsSection({ userId }: AppointmentsSectionProps) {
               </div>
 
               {apt.type === "virtual" && apt.status === "today" && (
-                <button className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-transform hover:scale-105">
+                <button className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-blue-700">
                   Join Call
                 </button>
               )}

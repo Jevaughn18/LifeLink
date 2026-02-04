@@ -36,10 +36,10 @@ const RequestSuccess = async ({
   const formattedDate = formatDateTime(appointment.schedule);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center p-6 transition-colors">
       <div className="w-full max-w-2xl">
         {/* Success Card */}
-        <div className="rounded-2xl bg-white p-8 shadow-sm border border-gray-100 text-center">
+        <div className="rounded-2xl bg-white dark:bg-gray-900 p-8 shadow-sm border border-gray-100 dark:border-gray-800 text-center transition-colors">
           {/* Success Animation */}
           <div className="mb-6 flex justify-center">
             <Image
@@ -52,23 +52,23 @@ const RequestSuccess = async ({
           </div>
 
           {/* Success Message */}
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
             Appointment Requested!
           </h1>
-          <p className="text-gray-600 mb-8">
+          <p className="text-gray-600 dark:text-gray-300 mb-8">
             Your appointment request has been successfully submitted. We'll be in touch shortly by email to confirm.
           </p>
 
           {/* Appointment Details Card */}
-          <div className="rounded-xl bg-gray-50 p-6 mb-8 text-left">
-            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-4">
+          <div className="rounded-xl bg-gray-50 dark:bg-gray-800 p-6 mb-8 text-left transition-colors">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-4">
               Appointment Details
             </h2>
 
             <div className="space-y-4">
               {/* Doctor */}
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white border-2 border-gray-200">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600">
                   {doctor?.image ? (
                     <Image
                       src={doctor.image}
@@ -78,23 +78,23 @@ const RequestSuccess = async ({
                       className="rounded-full"
                     />
                   ) : (
-                    <User className="h-6 w-6 text-gray-600" />
+                    <User className="h-6 w-6 text-gray-600 dark:text-gray-300" />
                   )}
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Doctor</p>
-                  <p className="font-semibold text-gray-900">Dr. {doctor?.name}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Doctor</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">Dr. {doctor?.name}</p>
                 </div>
               </div>
 
               {/* Date & Time */}
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-                  <Calendar className="h-6 w-6 text-blue-600" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+                  <Calendar className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Date & Time</p>
-                  <p className="font-semibold text-gray-900">{formattedDate.dateTime}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Date & Time</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{formattedDate.dateTime}</p>
                 </div>
               </div>
             </div>
@@ -111,7 +111,7 @@ const RequestSuccess = async ({
             </Link>
             <Link
               href={`/patients/${userId}/new-appointment`}
-              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border-2 border-gray-300 bg-white px-6 py-3 text-base font-semibold text-gray-900 transition-all hover:bg-gray-50"
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border-2 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-6 py-3 text-base font-semibold text-gray-900 dark:text-white transition-all hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Book Another
             </Link>
@@ -119,7 +119,7 @@ const RequestSuccess = async ({
         </div>
 
         {/* Footer */}
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
           © 2025 LifeLink. All rights reserved.
         </p>
       </div>

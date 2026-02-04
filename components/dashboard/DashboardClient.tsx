@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SideNav } from "./SideNav";
 import { HealthMetrics } from "./HealthMetrics";
 import { AppointmentsSection } from "./AppointmentsSection";
@@ -8,7 +8,9 @@ import { RecentRecords } from "./RecentRecords";
 import { InsightsCard } from "./InsightsCard";
 import { QuickActionsBar } from "./QuickActionsBar";
 import { HealthBotChat } from "./HealthBotChat";
+import { VoiceAssistantModal } from "./VoiceAssistantModal";
 import { Bell, Search } from "lucide-react";
+import { ThemeToggle } from "../ThemeToggle";
 
 interface DashboardClientProps {
   patient: any;
@@ -18,6 +20,25 @@ interface DashboardClientProps {
 export function DashboardClient({ patient, userId }: DashboardClientProps) {
   const [activeSection, setActiveSection] = useState("overview");
   const [showHealthBot, setShowHealthBot] = useState(false);
+  const [showVoiceAssistant, setShowVoiceAssistant] = useState(false);
+  const [appointments, setAppointments] = useState<any[]>([]);
+
+  // Fetch appointments
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const response = await fetch(`/api/appointments/list?userId=${userId}`);
+        const data = await response.json();
+        if (data.success) {
+          setAppointments(data.appointments || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch appointments:", error);
+      }
+    };
+
+    fetchAppointments();
+  }, [userId]);
 
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -29,7 +50,7 @@ export function DashboardClient({ patient, userId }: DashboardClientProps) {
   const firstName = patientName.split(" ")[0];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-black transition-colors">
       <SideNav
         activeSection={activeSection}
         onSectionChange={setActiveSection}
@@ -42,23 +63,24 @@ export function DashboardClient({ patient, userId }: DashboardClientProps) {
           {/* Header */}
           <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="animate-float-in">
-              <p className="text-sm text-gray-500">{currentDate}</p>
-              <h1 className="mt-1 text-3xl font-bold text-gray-900 lg:text-4xl">
-                Welcome back, {firstName} 
+              <p className="text-sm text-gray-500 dark:text-gray-400">{currentDate}</p>
+              <h1 className="mt-1 text-3xl font-bold text-gray-900 dark:text-white lg:text-4xl">
+                Welcome back, <span className="text-blue-600 dark:text-blue-400">{firstName}</span>
               </h1>
             </div>
 
             <div className="flex items-center gap-3 animate-float-in stagger-1">
               <div className="relative flex-1 sm:flex-initial">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                 <input
                   type="text"
                   placeholder="Search..."
-                  className="h-10 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none transition-shadow focus:ring-2 focus:ring-blue-500/20 sm:w-64"
+                  className="h-10 w-full rounded-xl border border-gray-300 dark:border-gray-800 bg-white dark:bg-black text-gray-900 dark:text-white pl-10 pr-4 text-sm outline-none transition-colors focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 dark:focus:border-blue-400 sm:w-64"
                 />
               </div>
-              <button className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm transition-transform hover:scale-105">
-                <Bell className="h-5 w-5 text-gray-600" />
+              <ThemeToggle />
+              <button className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white dark:bg-black border border-gray-300 dark:border-gray-800 shadow-sm transition-all hover:border-blue-500 dark:hover:border-blue-400">
+                <Bell className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                 <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-medium text-white">
                   4
                 </span>
@@ -68,7 +90,11 @@ export function DashboardClient({ patient, userId }: DashboardClientProps) {
 
           {/* Quick Actions */}
           <div className="mb-8 animate-float-in stagger-2">
-            <QuickActionsBar userId={userId} onMessageDoctor={() => setShowHealthBot(true)} />
+            <QuickActionsBar
+              userId={userId}
+              onMessageDoctor={() => setShowHealthBot(true)}
+              onVoiceAssistant={() => setShowVoiceAssistant(true)}
+            />
           </div>
 
           {/* Health Metrics */}
@@ -84,14 +110,14 @@ export function DashboardClient({ patient, userId }: DashboardClientProps) {
                 <AppointmentsSection userId={userId} />
               </div>
               <div className="animate-float-in stagger-4">
-                <RecentRecords patient={patient} />
+                <RecentRecords patient={patient} appointments={appointments} />
               </div>
             </div>
 
             {/* Right Column */}
             <div className="space-y-6 lg:col-span-1">
               <div className="animate-float-in stagger-3">
-                <InsightsCard patient={patient} userId={userId} />
+                <InsightsCard patient={patient} userId={userId} appointments={appointments} />
               </div>
             </div>
           </div>
@@ -106,6 +132,14 @@ export function DashboardClient({ patient, userId }: DashboardClientProps) {
           onClose={() => setShowHealthBot(false)}
         />
       )}
+
+      {/* Voice Assistant Modal */}
+      <VoiceAssistantModal
+        isOpen={showVoiceAssistant}
+        onClose={() => setShowVoiceAssistant(false)}
+        userId={userId}
+        patientName={patientName}
+      />
     </div>
   );
 }
