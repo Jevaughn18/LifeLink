@@ -119,7 +119,7 @@ const DoodleAnimationSlideshow: React.FC<DoodleAnimationSlideshowProps> = ({
       opacity: 1,
       transition: {
         duration: 2,
-        ease: "easeInOut",
+        ease: "easeInOut" as const,
       },
     },
     exit: {

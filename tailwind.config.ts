@@ -26,6 +26,7 @@ const config = {
           600: "#0D2A1F",
         },
         blue: {
+          1: "#0E78F9",
           500: "#79B5EC",
           600: "#152432",
         },
@@ -38,12 +39,25 @@ const config = {
           200: "#E8E9E9",
         },
         dark: {
+          1: "#1C1F2E",
+          2: "#161925",
+          3: "#252A41",
+          4: "#1E2757",
           200: "#0D0F10",
           300: "#131619",
           400: "#1A1D21",
           500: "#363A3D",
           600: "#76828D",
           700: "#ABB8C4",
+        },
+        sky: {
+          1: "#C9DDFF",
+        },
+        orange: {
+          1: "#FF742E",
+        },
+        yellow: {
+          1: "#F9A90E",
         },
       },
       backgroundColor: {
@@ -56,6 +70,7 @@ const config = {
         appointments: "url('/assets/images/appointments-bg.png')",
         pending: "url('/assets/images/pending-bg.png')",
         cancelled: "url('/assets/images/cancelled-bg.png')",
+        hero: "url('/images/hero-background.png')",
       },
       keyframes: {
         "accordion-down": {

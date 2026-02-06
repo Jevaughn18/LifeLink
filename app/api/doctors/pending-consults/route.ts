@@ -15,10 +15,10 @@ export async function OPTIONS() {
 // Admin polls this every few seconds to check for waiting patients
 export async function GET() {
   try {
-    // Lazy cleanup: auto-end any consult that's been waiting > 90 seconds
+    // Lazy cleanup: auto-end any consult that's been waiting > 5 minutes
     await update(
       `UPDATE instant_consults SET status = 'ended'
-       WHERE status = 'waiting' AND TIMESTAMPDIFF(SECOND, created_at, NOW()) > 90`
+       WHERE status = 'waiting' AND TIMESTAMPDIFF(SECOND, created_at, NOW()) > 300`
     );
 
     const consults = await query<any>(

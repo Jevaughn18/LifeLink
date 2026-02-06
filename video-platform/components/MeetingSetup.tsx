@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   DeviceSettings,
   VideoPreview,
@@ -34,6 +34,60 @@ const MeetingSetup = ({
   // https://getstream.io/video/docs/react/ui-cookbook/replacing-call-controls/
   const [isMicCamToggled, setIsMicCamToggled] = useState(false);
 
+  // Utility function to stop all media tracks
+  const stopAllMediaTracks = useCallback(() => {
+    console.log('[MeetingSetup] Stopping all media tracks...');
+    
+    // Stop all video element streams
+    const videos = document.querySelectorAll('video');
+    console.log(`[MeetingSetup] Found ${videos.length} video elements`);
+    videos.forEach((video, index) => {
+      const stream = (video as HTMLVideoElement).srcObject as MediaStream;
+      if (stream) {
+        const tracks = stream.getTracks();
+        console.log(`[MeetingSetup] Video ${index}: ${tracks.length} tracks`);
+        tracks.forEach((track) => {
+          console.log(`[MeetingSetup] Stopping track: ${track.kind} - ${track.label}`);
+          track.stop();
+        });
+        (video as HTMLVideoElement).srcObject = null;
+      }
+    });
+
+    // Stop all audio element streams
+    const audios = document.querySelectorAll('audio');
+    console.log(`[MeetingSetup] Found ${audios.length} audio elements`);
+    audios.forEach((audio, index) => {
+      const stream = (audio as HTMLAudioElement).srcObject as MediaStream;
+      if (stream) {
+        const tracks = stream.getTracks();
+        console.log(`[MeetingSetup] Audio ${index}: ${tracks.length} tracks`);
+        tracks.forEach((track) => {
+          console.log(`[MeetingSetup] Stopping track: ${track.kind} - ${track.label}`);
+          track.stop();
+        });
+        (audio as HTMLAudioElement).srcObject = null;
+      }
+    });
+
+    // Try SDK-level streams
+    try {
+      const camStream = call.camera?.state?.mediaStream;
+      if (camStream) {
+        console.log('[MeetingSetup] Stopping SDK camera stream');
+        camStream.getTracks().forEach((track) => track.stop());
+      }
+      const micStream = call.microphone?.state?.mediaStream;
+      if (micStream) {
+        console.log('[MeetingSetup] Stopping SDK microphone stream');
+        micStream.getTracks().forEach((track) => track.stop());
+      }
+    } catch (e) {
+      console.warn('[MeetingSetup] Error stopping SDK streams:', e);
+    }
+  }, [call]);
+
+  // Handle mic/cam toggle
   useEffect(() => {
     if (isMicCamToggled) {
       call.camera.disable();
@@ -43,6 +97,29 @@ const MeetingSetup = ({
       call.microphone.enable();
     }
   }, [isMicCamToggled, call.camera, call.microphone]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      console.log('[MeetingSetup] Component unmounting, cleaning up...');
+      call.camera.disable();
+      call.microphone.disable();
+      stopAllMediaTracks();
+    };
+  }, [call, stopAllMediaTracks]);
+
+  const handleJoinMeeting = async () => {
+    console.log('[MeetingSetup] Joining meeting...');
+    
+    // If user wants to join with mic/cam off, stop the preview tracks first
+    if (isMicCamToggled) {
+      console.log('[MeetingSetup] User joining with mic/cam off, stopping preview...');
+      stopAllMediaTracks();
+    }
+    
+    await call.join();
+    setIsSetupComplete(true);
+  };
 
   if (callTimeNotArrived)
     return (
@@ -76,11 +153,7 @@ const MeetingSetup = ({
       </div>
       <Button
         className="rounded-md bg-green-500 px-4 py-2.5"
-        onClick={() => {
-          call.join();
-
-          setIsSetupComplete(true);
-        }}
+        onClick={handleJoinMeeting}
       >
         Join meeting
       </Button>

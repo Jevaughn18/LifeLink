@@ -85,7 +85,7 @@ export const columns: ColumnDef<Appointment>[] = [
       const [reviewOpen, setReviewOpen] = useState(false);
 
       // The data from the database is already a parsed object.
-      const aiAnalysis = appointment.aiSymptomAnalysis as SymptomAnalysisResult | null;
+      const aiAnalysis = appointment.aiSymptomAnalysis as unknown as SymptomAnalysisResult | null;
 
       if (!aiAnalysis) {
         return <p className="text-14-regular text-gray-500 dark:text-gray-400">No AI data</p>;

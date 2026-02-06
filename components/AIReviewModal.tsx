@@ -35,7 +35,7 @@ export const AIReviewModal = ({
 
   // The AI analysis data is now expected to be a pre-parsed object.
   const aiAnalysis: SymptomAnalysisResult | null = appointment.aiSymptomAnalysis
-    ? (appointment.aiSymptomAnalysis as SymptomAnalysisResult)
+    ? (appointment.aiSymptomAnalysis as unknown as SymptomAnalysisResult)
     : null;
 
   const handleApprove = async (approved: boolean) => {

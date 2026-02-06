@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Plus, MessageSquare, Mic, Sparkles, X, Video, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface QuickActionsBarProps {
   userId: string;
@@ -11,7 +12,8 @@ interface QuickActionsBarProps {
   patientName?: string;
 }
 
-export function QuickActionsBar({ userId, onMessageDoctor, onVoiceAssistant, patientName = "Patient" }: QuickActionsBarProps) {
+export function QuickActionsBar({ onMessageDoctor, onVoiceAssistant }: QuickActionsBarProps) {
+  const router = useRouter();
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [joinLink, setJoinLink] = useState("");
@@ -29,8 +31,6 @@ export function QuickActionsBar({ userId, onMessageDoctor, onVoiceAssistant, pat
     };
   }, [isConnectModalOpen, isVideoModalOpen]);
 
-  const VIDEO_PLATFORM_URL = process.env.NEXT_PUBLIC_VIDEO_PLATFORM_URL || "http://localhost:3001";
-
   const handleInstantConsult = async () => {
     setIsChecking(true);
     setNoDocAvailable(false);
@@ -38,12 +38,8 @@ export function QuickActionsBar({ userId, onMessageDoctor, onVoiceAssistant, pat
       const res = await fetch("/api/instant-consult", { method: "POST" });
       const data = await res.json();
       if (res.ok && data.meetingId) {
-        // Go straight into the meeting room — no video platform home page
-        window.open(
-          `${VIDEO_PLATFORM_URL}/meeting/${data.meetingId}?userId=${userId}&name=${encodeURIComponent(patientName)}`,
-          "_blank"
-        );
         setIsVideoModalOpen(false);
+        router.push(`/meeting/${data.meetingId}`);
       } else {
         // 503 = no doctors on duty right now
         setNoDocAvailable(true);

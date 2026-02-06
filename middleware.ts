@@ -87,6 +87,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Meeting pages — auth handled at page level (session cookie or admin query-params)
+  if (pathname.startsWith("/meeting/")) {
+    return NextResponse.next();
+  }
+
   // Static assets and Next.js internals — always pass through
   if (
     pathname.startsWith("/_next/") ||

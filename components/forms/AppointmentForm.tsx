@@ -408,7 +408,6 @@ export const AppointmentForm = ({
                     name="reason"
                     label=""
                     placeholder="e.g., Annual check-up, Follow-up consultation, etc."
-                    disabled={type === "schedule"}
                   />
                 </div>
 
@@ -425,7 +424,6 @@ export const AppointmentForm = ({
                     name="note"
                     label=""
                     placeholder="Any special requests or preferences..."
-                    disabled={type === "schedule"}
                   />
                 </div>
               </div>

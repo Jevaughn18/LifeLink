@@ -44,7 +44,7 @@ const DAYS_OF_WEEK = [
   "Friday",
   "Saturday",
   "Sunday",
-];
+] as const;
 
 const SLOT_DURATIONS = [
   { value: 15, label: "15 minutes" },
@@ -83,7 +83,7 @@ export const DoctorAvailabilityForm = ({
           }
         : {
             doctorName: availability?.doctorName || "",
-            dayOfWeek: availability?.dayOfWeek || "Monday",
+            dayOfWeek: (availability?.dayOfWeek || "Monday") as "Sunday" | "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday",
             startTime: availability?.startTime || "09:00",
             endTime: availability?.endTime || "17:00",
             slotDurationMinutes: availability?.slotDurationMinutes || 30,
@@ -186,9 +186,9 @@ export const DoctorAvailabilityForm = ({
                 </div>
               ))}
             </div>
-            {form.formState.errors.daysOfWeek && (
+            {(form.formState.errors as any).daysOfWeek && (
               <p className="text-red-400 text-sm mt-1.5">
-                {form.formState.errors.daysOfWeek.message}
+                {(form.formState.errors as any).daysOfWeek.message}
               </p>
             )}
           </div>

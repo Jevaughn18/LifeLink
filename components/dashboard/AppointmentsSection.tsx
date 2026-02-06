@@ -34,7 +34,7 @@ export function AppointmentsSection({ userId }: AppointmentsSectionProps) {
           const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
           const formattedAppointments: Appointment[] = data.appointments
-            .map((apt: any) => {
+            .map((apt: any): Appointment => {
               const appointmentDate = new Date(apt.schedule);
               const isToday = appointmentDate.toDateString() === today.toDateString();
               const isPassed = apt.appointment_status === 'passed' || (!isToday && appointmentDate < startOfToday);
@@ -58,7 +58,7 @@ export function AppointmentsSection({ userId }: AppointmentsSectionProps) {
                 status: isPassed ? "passed" : (isToday ? "today" : "upcoming"),
               };
             })
-            .filter((apt) => apt.status !== "passed");
+            .filter((apt: Appointment) => apt.status !== "passed");
 
           setAppointments(formattedAppointments);
         }

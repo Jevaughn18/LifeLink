@@ -45,7 +45,10 @@ export interface Appointment extends Models.Document {
   aiHumanNotes?: string;
 }
 
-export interface DoctorAvailability extends Models.Document {
+export interface DoctorAvailability {
+  $id: string;
+  $createdAt: string;
+  $updatedAt: string;
   doctorName: string;
   dayOfWeek: string;
   startTime: string;

@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ========================================== VIDEO PLATFORM UTILITIES */
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
 /* ========================================== TAILWIND STYLES */
 @layer base {
   /* Remove scrollbar */

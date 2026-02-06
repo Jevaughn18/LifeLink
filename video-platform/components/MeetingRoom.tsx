@@ -69,6 +69,43 @@ const MeetingRoom = () => {
     return () => clearInterval(interval);
   }, [participants.length, resetKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Cleanup media tracks on unmount (e.g., browser back, tab close)
+  useEffect(() => {
+    return () => {
+      // Disable SDK-level
+      call?.camera.disable();
+      call?.microphone.disable();
+
+      // Stop all video element streams
+      document.querySelectorAll('video').forEach((video) => {
+        const stream = (video as HTMLVideoElement).srcObject as MediaStream;
+        if (stream) {
+          stream.getTracks().forEach((track) => track.stop());
+          (video as HTMLVideoElement).srcObject = null;
+        }
+      });
+
+      // Stop all audio element streams
+      document.querySelectorAll('audio').forEach((audio) => {
+        const stream = (audio as HTMLAudioElement).srcObject as MediaStream;
+        if (stream) {
+          stream.getTracks().forEach((track) => track.stop());
+          (audio as HTMLAudioElement).srcObject = null;
+        }
+      });
+
+      // Try SDK-level streams
+      try {
+        const camStream = call?.camera?.state?.mediaStream;
+        if (camStream) camStream.getTracks().forEach((track) => track.stop());
+        const micStream = call?.microphone?.state?.mediaStream;
+        if (micStream) micStream.getTracks().forEach((track) => track.stop());
+      } catch (e) {
+        // Ignore
+      }
+    };
+  }, [call]);
+
   const MAIN_APP_URL = process.env.NEXT_PUBLIC_MAIN_APP_URL || 'http://localhost:3000';
 
   const handleWaitLonger = async () => {
@@ -84,6 +121,85 @@ const MeetingRoom = () => {
     } catch {
       // best-effort
     }
+  };
+
+  // Helper to stop all active media tracks in the browser
+  const stopAllMediaTracks = () => {
+    console.log('[MeetingRoom] Stopping all media tracks...');
+    
+    // Get all video elements and stop their streams
+    const videos = document.querySelectorAll('video');
+    console.log(`[MeetingRoom] Found ${videos.length} video elements`);
+    videos.forEach((video, index) => {
+      const stream = (video as HTMLVideoElement).srcObject as MediaStream;
+      if (stream) {
+        const tracks = stream.getTracks();
+        console.log(`[MeetingRoom] Video ${index}: ${tracks.length} tracks`);
+        tracks.forEach((track) => {
+          console.log(`[MeetingRoom] Stopping track: ${track.kind} - ${track.label}`);
+          track.stop();
+        });
+        (video as HTMLVideoElement).srcObject = null;
+      }
+    });
+
+    // Get all audio elements and stop their streams
+    document.querySelectorAll('audio').forEach((audio) => {
+      const stream = (audio as HTMLAudioElement).srcObject as MediaStream;
+      if (stream) {
+        stream.getTracks().forEach((track) => {
+          track.stop();
+          console.log('Stopped track:', track.kind, track.label);
+        });
+        (audio as HTMLAudioElement).srcObject = null;
+      }
+    });
+
+    // Try to stop SDK-level streams as well
+    try {
+      const camStream = call?.camera?.state?.mediaStream;
+      if (camStream) {
+        camStream.getTracks().forEach((track) => track.stop());
+      }
+    } catch (e) {
+      // Ignore
+    }
+
+    try {
+      const micStream = call?.microphone?.state?.mediaStream;
+      if (micStream) {
+        micStream.getTracks().forEach((track) => track.stop());
+      }
+    } catch (e) {
+      // Ignore
+    }
+  };
+
+  const leaveCall = async () => {
+    console.log('[MeetingRoom] leaveCall called');
+    
+    // Disable SDK-level camera and microphone first
+    try {
+      console.log('[MeetingRoom] Disabling SDK camera/mic...');
+      await call?.camera.disable();
+      await call?.microphone.disable();
+    } catch (e) {
+      console.warn('[MeetingRoom] Error disabling camera/mic:', e);
+    }
+
+    // Stop all media tracks aggressively
+    stopAllMediaTracks();
+
+    // Leave the call
+    try {
+      console.log('[MeetingRoom] Leaving call...');
+      await call?.leave();
+    } catch (e) {
+      console.warn('[MeetingRoom] Error leaving call:', e);
+    }
+
+    console.log('[MeetingRoom] Navigating to home...');
+    router.push('/');
   };
 
   if (callingState !== CallingState.JOINED) return <Loader />;
@@ -109,10 +225,7 @@ const MeetingRoom = () => {
             Wait longer
           </button>
           <button
-            onClick={() => {
-              call?.leave();
-              router.push('/');
-            }}
+            onClick={leaveCall}
             className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors"
           >
             End call
@@ -154,7 +267,7 @@ const MeetingRoom = () => {
       </div>
       {/* video layout and call controls */}
       <div className="fixed bottom-0 flex w-full items-center justify-center gap-5">
-        <CallControls onLeave={() => router.push(`/`)} />
+        <CallControls onLeave={leaveCall} />
 
         <DropdownMenu>
           <div className="flex items-center">

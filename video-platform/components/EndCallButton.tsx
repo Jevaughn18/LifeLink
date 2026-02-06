@@ -26,6 +26,38 @@ const EndCallButton = () => {
   if (!isMeetingOwner) return null;
 
   const endCall = async () => {
+    // Disable SDK-level camera and microphone
+    await call.camera.disable();
+    await call.microphone.disable();
+
+    // Stop all video element streams
+    document.querySelectorAll('video').forEach((video) => {
+      const stream = (video as HTMLVideoElement).srcObject as MediaStream;
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+        (video as HTMLVideoElement).srcObject = null;
+      }
+    });
+
+    // Stop all audio element streams
+    document.querySelectorAll('audio').forEach((audio) => {
+      const stream = (audio as HTMLAudioElement).srcObject as MediaStream;
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+        (audio as HTMLAudioElement).srcObject = null;
+      }
+    });
+
+    // Try SDK-level streams
+    try {
+      const camStream = call.camera?.state?.mediaStream;
+      if (camStream) camStream.getTracks().forEach((track) => track.stop());
+      const micStream = call.microphone?.state?.mediaStream;
+      if (micStream) micStream.getTracks().forEach((track) => track.stop());
+    } catch (e) {
+      // Ignore
+    }
+
     await call.endCall();
     router.push('/');
   };

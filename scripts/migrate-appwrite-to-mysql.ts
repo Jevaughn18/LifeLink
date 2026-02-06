@@ -43,7 +43,7 @@ async function migrateAppwriteToMySQL() {
 
     let patientCount = 0;
 
-    for (const patient of appwritePatients.documents) {
+    for (const patient of appwritePatients.documents as any[]) {
       try {
         // Download identification document if it exists
         let identificationDocumentUrl = null;
@@ -134,7 +134,7 @@ async function migrateAppwriteToMySQL() {
     );
 
     let appointmentCount = 0;
-    for (const appointment of appwriteAppointments.documents) {
+    for (const appointment of appwriteAppointments.documents as any[]) {
       try {
         // Check if appointment already exists
         const existingAppointment = await query<any>(

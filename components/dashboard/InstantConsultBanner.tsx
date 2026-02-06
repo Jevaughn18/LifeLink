@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Video, Phone, X } from "lucide-react";
 
 interface PendingConsult {
@@ -11,16 +11,83 @@ interface PendingConsult {
   created_at: string;
 }
 
-const VIDEO_PLATFORM_URL = process.env.NEXT_PUBLIC_VIDEO_PLATFORM_URL || "http://localhost:3001";
+function playNotificationSound(ctx: AudioContext) {
+  try {
+    // Resume context if it's suspended
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+
+    const notes = [
+      { freq: 440, start: 0, dur: 0.15 },   // A4
+      { freq: 659, start: 0.12, dur: 0.25 }, // E5
+    ];
+    
+    notes.forEach(({ freq, start, dur }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+      gain.gain.setValueAtTime(0, ctx.currentTime + start);
+      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + dur);
+    });
+  } catch (error) {
+    console.error("Error playing notification sound:", error);
+  }
+}
 
 export function InstantConsultBanner() {
   const [consults, setConsults] = useState<PendingConsult[]>([]);
+  const seenIds = useRef<Set<string>>(new Set());
+  const initialised = useRef(false);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  // Browsers block AudioContext until a user gesture has occurred on the page.
+  // Create it on the first click so it's ready when a notification arrives.
+  useEffect(() => {
+    const init = async () => {
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new AudioContext();
+        // Resume the context if it's suspended after creation
+        if (audioCtxRef.current.state === "suspended") {
+          await audioCtxRef.current.resume();
+        }
+      }
+    };
+    document.addEventListener("pointerdown", init, { once: true });
+    return () => document.removeEventListener("pointerdown", init);
+  }, []);
 
   const fetchConsults = useCallback(async () => {
     try {
       const res = await fetch("/api/doctors/pending-consults");
       const data = await res.json();
-      setConsults(data.consults || []);
+      const incoming: PendingConsult[] = data.consults || [];
+
+      if (!initialised.current) {
+        // First fetch — populate seen set silently, no sound
+        incoming.forEach((c) => seenIds.current.add(c.id));
+        initialised.current = true;
+      } else {
+        // Subsequent fetches — sound on any new IDs
+        let hasNew = false;
+        incoming.forEach((c) => {
+          if (!seenIds.current.has(c.id)) {
+            seenIds.current.add(c.id);
+            hasNew = true;
+          }
+        });
+        if (hasNew && audioCtxRef.current) {
+          playNotificationSound(audioCtxRef.current);
+        }
+      }
+
+      setConsults(incoming);
     } catch {
       // silent — polling will retry on next tick
     }
@@ -40,7 +107,7 @@ export function InstantConsultBanner() {
     });
     setConsults((prev) => prev.filter((c) => c.id !== consult.id));
     window.open(
-      `${VIDEO_PLATFORM_URL}/meeting/${consult.meeting_id}?userId=admin&name=${encodeURIComponent(consult.doctor_name)}`,
+      `/meeting/${consult.meeting_id}?userId=admin&name=${encodeURIComponent(consult.doctor_name)}`,
       "_blank"
     );
   };
