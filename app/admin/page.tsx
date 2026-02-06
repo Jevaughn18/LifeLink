@@ -32,7 +32,7 @@ const AdminPage = async () => {
               height={32}
               width={162}
               alt="LifeLink"
-              className="h-8 w-auto"
+              style={{ height: '32px', width: 'auto' }}
             />
           </Link>
           <div className="flex items-center gap-3">

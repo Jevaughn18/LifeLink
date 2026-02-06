@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 
 export async function POST() {
-  const response = NextResponse.redirect(new URL('/login', process.env.NEXT_PUBLIC_ENDPOINT || 'http://localhost:3000'));
+  // Create a JSON response
+  const response = NextResponse.json({ success: true, message: 'Logged out successfully' });
+
+  // Clear the session cookie
   response.cookies.set({
     name: 'session',
     value: '',
@@ -11,5 +14,6 @@ export async function POST() {
     path: '/',
     maxAge: 0,
   });
+
   return response;
 }

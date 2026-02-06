@@ -7,7 +7,7 @@ const PUBLIC_ROUTES = [
   "/register",
   "/verify-email",
   "/register/complete",
-  "/admin",
+  "/about",
 ];
 
 // API prefixes that are public (own auth or no patient data)
@@ -18,6 +18,7 @@ const PUBLIC_API_PREFIXES = [
   "/api/doctors/",
   "/api/sagicor/",
   "/api/auth/logout",
+  "/api/admin/authenticate",
 ];
 
 // Edge-compatible JWT verification using SubtleCrypto.
@@ -74,8 +75,73 @@ async function verifySessionToken(
   }
 }
 
+// Verify admin session token
+async function verifyAdminToken(token: string): Promise<boolean> {
+  try {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return false;
+
+    const parts = token.split(".");
+    if (parts.length !== 3) return false;
+
+    const [header, payload, signature] = parts;
+
+    // Import the shared secret as an HMAC key
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["verify"]
+    );
+
+    // base64url → Uint8Array
+    const sigBytes = Uint8Array.from(
+      atob(signature.replace(/-/g, "+").replace(/_/g, "/")),
+      (c) => c.charCodeAt(0)
+    );
+
+    // Verify the signature against header.payload
+    const isValid = await crypto.subtle.verify(
+      "HMAC",
+      key,
+      sigBytes,
+      new TextEncoder().encode(`${header}.${payload}`)
+    );
+
+    if (!isValid) return false;
+
+    // Decode the payload (base64url → JSON)
+    const decoded = JSON.parse(
+      atob(payload.replace(/-/g, "+").replace(/_/g, "/"))
+    );
+
+    // Check expiration and role
+    if (decoded.exp && Date.now() / 1000 > decoded.exp) return false;
+    if (decoded.role !== "admin") return false;
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Check if user is trying to access public pages while already logged in
+  if (pathname === "/" || pathname === "/login" || pathname === "/register") {
+    const token = request.cookies.get("session")?.value;
+    const user = token ? await verifySessionToken(token) : null;
+
+    if (user) {
+      // User is already logged in, redirect to dashboard
+      // This prevents logged-in users from accessing home, login, or register pages
+      return NextResponse.redirect(request.nextUrl.origin + "/dashboard");
+    }
+    // User not logged in, allow access
+    return NextResponse.next();
+  }
 
   // Exact public page match
   if (PUBLIC_ROUTES.includes(pathname)) {
@@ -101,6 +167,18 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith("/uploads/") ||
     pathname.startsWith("/api/sentry")
   ) {
+    return NextResponse.next();
+  }
+
+  // --- Admin routes require admin session ---
+  if (pathname.startsWith("/admin")) {
+    const adminToken = request.cookies.get("admin_session")?.value;
+    const isAdmin = adminToken ? await verifyAdminToken(adminToken) : false;
+
+    if (!isAdmin) {
+      // Redirect to homepage with admin param to show passkey modal
+      return NextResponse.redirect(request.nextUrl.origin + "/?admin=true");
+    }
     return NextResponse.next();
   }
 

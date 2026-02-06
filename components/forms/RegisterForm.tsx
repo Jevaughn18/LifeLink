@@ -85,7 +85,8 @@ const RegisterForm = ({ user }: { user: User }) => {
 
       if (newPatient) {
         await setSessionCookie(newPatient.$id, patient.email, patient.name);
-        router.push("/dashboard");
+        // Use replace() to remove registration page from browser history
+        router.replace("/dashboard");
       } else {
         console.error("No patient returned from registerPatient");
       }

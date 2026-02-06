@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -56,7 +55,6 @@ interface SideNavProps {
 
 export function SideNav({ activeSection, onSectionChange, patient, appointmentBadge, recordsBadge }: SideNavProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const router = useRouter();
 
   const navItems = [
     { id: "overview", icon: LayoutGrid, label: "Overview" },
@@ -66,8 +64,20 @@ export function SideNav({ activeSection, onSectionChange, patient, appointmentBa
     { id: "settings", icon: Settings, label: "Settings" },
   ];
 
-  const handleLogout = () => {
-    router.push("/login");
+  const handleLogout = async () => {
+    try {
+      // Call logout API to clear session cookie
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+      });
+
+      // Redirect to login page
+      window.location.href = "/login";
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still redirect even if API call fails
+      window.location.href = "/login";
+    }
   };
 
   return (

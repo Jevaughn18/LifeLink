@@ -27,41 +27,45 @@ export const PasskeyModal = () => {
   const [passkey, setPasskey] = useState("");
   const [error, setError] = useState("");
 
-  const encryptedKey =
-    typeof window !== "undefined"
-      ? window.localStorage.getItem("accessKey")
-      : null;
-
   useEffect(() => {
-    const accessKey = encryptedKey && decryptKey(encryptedKey);
-
-    if (path)
-      if (accessKey === process.env.NEXT_PUBLIC_ADMIN_PASSKEY!.toString()) {
-        setOpen(false);
-        router.push("/admin");
-      } else {
-        setOpen(true);
-      }
-  }, [encryptedKey]);
+    // Always show the modal when component mounts
+    // The server will check for admin session cookie
+    setOpen(true);
+  }, []);
 
   const closeModal = () => {
     setOpen(false);
     router.push("/");
   };
 
-  const validatePasskey = (
+  const validatePasskey = async (
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => {
     e.preventDefault();
 
-    if (passkey === process.env.NEXT_PUBLIC_ADMIN_PASSKEY) {
-      const encryptedKey = encryptKey(passkey);
+    try {
+      // Call server-side API to validate passkey
+      const response = await fetch("/api/admin/authenticate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passkey }),
+      });
 
-      localStorage.setItem("accessKey", encryptedKey);
+      const data = await response.json();
 
-      setOpen(false);
-    } else {
-      setError("Invalid passkey. Please try again.");
+      if (data.success) {
+        // Store encrypted key in localStorage for client-side checks
+        const encryptedKey = encryptKey(passkey);
+        localStorage.setItem("accessKey", encryptedKey);
+
+        setOpen(false);
+        router.push("/admin");
+      } else {
+        setError("Invalid passkey. Please try again.");
+      }
+    } catch (error) {
+      console.error("Authentication error:", error);
+      setError("Authentication failed. Please try again.");
     }
   };
 

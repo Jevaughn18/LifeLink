@@ -46,9 +46,9 @@ export const PatientLoginForm = () => {
 
       if (data.success) {
         toast.success("Login successful! Redirecting...");
-        // Full-page navigation so the session cookie set by the authenticate
-        // response is guaranteed to be included in the next request.
-        window.location.href = "/dashboard";
+        // Use replace() to remove login page from browser history
+        // so back button won't return to login page
+        window.location.replace("/dashboard");
       } else {
         toast.error(data.error || "Invalid email or password.");
       }
@@ -64,8 +64,8 @@ export const PatientLoginForm = () => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 space-y-6">
         <section className="mb-12 space-y-4">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Welcome Back </h1>
-          <p className="text-gray-600 dark:text-gray-300 text-lg">Sign in to access your appointments.</p>
+          <h1 className="text-4xl font-bold text-black">Welcome Back </h1>
+          <p className="text-black text-lg">Sign in to access your appointments.</p>
         </section>
 
         <CustomFormField

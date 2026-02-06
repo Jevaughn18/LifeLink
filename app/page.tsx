@@ -1,296 +1,642 @@
+'use client';
 
 import Image from "next/image";
 import Link from "next/link";
 import { PasskeyModal } from "@/components/PasskeyModal";
+import { ArrowUpRight, Video, Calendar, Bot, Shield, Heart, Menu, X } from "lucide-react";
+import { useState, useEffect } from "react";
+
+const specialties = [
+  { name: "Physiologist", hasIcon: true },
+  { name: "Cardiologist", hasIcon: false },
+  { name: "Specialist", hasIcon: true },
+  { name: "Neurologist", color: "accent" },
+];
 
 const Home = ({ searchParams }: SearchParamProps) => {
   const isAdmin = searchParams?.admin === "true";
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [leftText, setLeftText] = useState("");
+  const [rightText, setRightText] = useState("");
+
+  const leftFullText = "YOUR HEALTH\nJOURNEY";
+  const rightFullText = "AT YOUR\nFINGERTIPS";
+
+  useEffect(() => {
+    setIsVisible(true);
+
+    // Typewriter effect for left text
+    let leftIndex = 0;
+    const leftInterval = setInterval(() => {
+      if (leftIndex <= leftFullText.length) {
+        setLeftText(leftFullText.slice(0, leftIndex));
+        leftIndex++;
+      } else {
+        clearInterval(leftInterval);
+      }
+    }, 50);
+
+    // Typewriter effect for right text (starts after a delay)
+    const rightTimeout = setTimeout(() => {
+      let rightIndex = 0;
+      const rightInterval = setInterval(() => {
+        if (rightIndex <= rightFullText.length) {
+          setRightText(rightFullText.slice(0, rightIndex));
+          rightIndex++;
+        } else {
+          clearInterval(rightInterval);
+        }
+      }, 50);
+    }, 600);
+
+    return () => {
+      clearInterval(leftInterval);
+      clearTimeout(rightTimeout);
+    };
+  }, []);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen light" style={{ backgroundColor: 'hsl(150, 15%, 95%)', color: '#1a1a1a' }}>
       {isAdmin && <PasskeyModal />}
 
-      {/* Header/Navigation */}
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Link href="/" className="flex items-center">
-              <Image
-                src="/assets/logo.svg"
-                height={40}
-                width={150}
-                alt="LifeLink Logo"
-                className="h-10 w-auto"
-              />
+            <Link href="/" className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center">
+                <Heart className="w-4 h-4 text-white" fill="currentColor" />
+              </div>
+              <span className="text-xl font-bold text-gray-900 tracking-tight">
+                LifeLink
+              </span>
             </Link>
 
-            {/* Auth Buttons */}
-            <div className="flex items-center gap-4">
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center gap-10">
+              <a href="#product" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                Product
+              </a>
+              <Link href="/about" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                About us
+              </Link>
+            </nav>
+
+            {/* Desktop CTA */}
+            <div className="hidden lg:flex items-center gap-4">
               <Link
                 href="/login"
-                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
+                className="px-6 py-2 rounded-full bg-gray-800 text-white font-semibold text-sm hover:bg-gray-900 transition-colors"
               >
                 Login
               </Link>
               <Link
                 href="/register"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm"
+                className="px-6 py-2 rounded-full bg-blue-500 text-white font-semibold text-sm hover:bg-blue-600 transition-colors"
               >
                 Sign Up
               </Link>
             </div>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              className="lg:hidden p-2 text-gray-900"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="lg:hidden bg-white border-b border-gray-200 overflow-hidden">
+            <div className="max-w-7xl mx-auto px-6 py-6 space-y-4">
+              <a
+                href="#product"
+                className="block py-2 text-gray-900 font-medium hover:text-blue-500 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Product
+              </a>
+              <Link
+                href="/about"
+                className="block py-2 text-gray-900 font-medium hover:text-blue-500 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                About us
+              </Link>
+              <div className="pt-4 space-y-3">
+                <Link
+                  href="/login"
+                  className="block w-full px-6 py-2 rounded-full bg-gray-800 text-white text-center font-semibold"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="block w-full px-6 py-2 rounded-full bg-blue-500 text-white text-center font-semibold"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}
-      <main className="flex-1">
-        <section className="bg-gradient-to-br from-blue-600 to-blue-700 dark:from-blue-800 dark:to-blue-900 py-20 lg:py-32">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              {/* Left Content */}
-              <div className="text-white space-y-8">
-                <div className="flex items-center gap-3">
-                  <div className="flex -space-x-2">
-                    <div className="w-10 h-10 rounded-full bg-white/20 border-2 border-white"></div>
-                    <div className="w-10 h-10 rounded-full bg-white/20 border-2 border-white"></div>
-                    <div className="w-10 h-10 rounded-full bg-white/20 border-2 border-white"></div>
-                  </div>
-                  <p className="text-white/90">Trusted by thousands of Jamaicans</p>
-                </div>
-
-                <h1 className="text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight">
-                  Your Health,
-                  <br />
-                  Our Priority
+      <main className="relative min-h-screen pt-20 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="pt-12 lg:pt-16">
+            {/* Large Split Typography */}
+            <div className="flex flex-col lg:flex-row items-start justify-between gap-8 mb-12">
+              {/* Left headline */}
+              <div
+                className="flex-1"
+                style={{
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+                  transition: 'all 0.7s ease-out'
+                }}
+              >
+                <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-gray-900 leading-[0.95] tracking-tight whitespace-pre-line">
+                  {leftText}
+                  <span className="animate-pulse">|</span>
                 </h1>
+              </div>
 
-                <p className="text-xl text-white/90 max-w-xl">
-                  Connect with Jamaica's best healthcare providers. Book appointments,
-                  manage your health records, and get the care you deserve - all in one place.
-                </p>
+              {/* Center pill image */}
+              <div
+                className="hidden lg:flex items-center justify-center flex-shrink-0"
+                style={{
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? 'scale(1)' : 'scale(0.8)',
+                  transition: 'all 0.8s ease-out 0.2s'
+                }}
+              >
+                <Image
+                  src="/assets/pill-3d.png"
+                  alt="Medical pill"
+                  width={160}
+                  height={160}
+                  className="w-32 xl:w-40 h-auto animate-float"
+                />
+                <Image
+                  src="/assets/pill-white.png"
+                  alt="Medical tablet"
+                  width={80}
+                  height={80}
+                  className="w-16 xl:w-20 h-auto -ml-4 animate-float-delayed"
+                />
+              </div>
 
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Link
-                    href="/register"
-                    className="bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition-colors text-center shadow-lg flex items-center justify-center gap-2"
-                  >
-                    Get Started
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-                  <Link
-                    href="/login"
-                    className="bg-blue-500/20 backdrop-blur-sm text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-500/30 transition-colors text-center border border-white/30"
-                  >
-                    Sign In
-                  </Link>
+              {/* Right headline */}
+              <div
+                className="flex-1 text-left lg:text-right"
+                style={{
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+                  transition: 'all 0.7s ease-out 0.1s'
+                }}
+              >
+                <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-gray-900 leading-[0.95] tracking-tight whitespace-pre-line">
+                  {rightText}
+                  <span className="animate-pulse">|</span>
+                </h1>
+                <a
+                  href="#services"
+                  className="inline-flex items-center gap-2 mt-4 text-sm font-medium text-gray-600 hover:text-blue-500 transition-colors"
+                >
+                  read more
+                  <span className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
+                    <ArrowUpRight className="w-4 h-4 text-white" />
+                  </span>
+                </a>
+              </div>
+            </div>
+
+            {/* Doctor Selection & CTA Row */}
+            <div className="flex flex-wrap items-center gap-6 mb-12">
+              {/* Doctor avatar */}
+              <div
+                className="flex items-center gap-3"
+                style={{
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? 'translateX(0)' : 'translateX(-20px)',
+                  transition: 'all 0.6s ease-out 0.4s'
+                }}
+              >
+                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-md">
+                  <Image
+                    src="/assets/doc-2.png"
+                    alt="Doctor"
+                    width={56}
+                    height={56}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="text-sm">
+                  <p className="font-medium text-gray-900">Choice your</p>
+                  <p className="text-gray-600">doctor</p>
                 </div>
               </div>
 
-              {/* Right Image */}
-              <div className="relative h-[400px] lg:h-[500px]">
+              {/* New Explore Button */}
+              <div
+                style={{
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+                  transition: 'all 0.6s ease-out 0.5s'
+                }}
+              >
+                <Link
+                  href="/register"
+                  className="px-8 py-3 rounded-full bg-blue-500 text-white font-semibold text-base shadow-lg hover:shadow-xl hover:scale-105 transform transition-all"
+                >
+                  New Explore
+                </Link>
+              </div>
+
+              {/* Dot indicators */}
+              <div className="hidden sm:flex items-center gap-2 ml-auto">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-400" />
+                <span className="w-2.5 h-2.5 rounded-full bg-gray-300" />
+                <span className="w-2.5 h-2.5 rounded-full bg-gray-300" />
+              </div>
+            </div>
+
+            {/* Bottom Section - Specialists & Doctor Image */}
+            <div className="grid lg:grid-cols-3 gap-8 pb-12">
+              {/* Left - Specialists */}
+              <div
+                className="space-y-6"
+                style={{
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+                  transition: 'all 0.7s ease-out 0.6s'
+                }}
+              >
+                <div>
+                  <p className="text-sm text-gray-600 mb-2">We Provide</p>
+                  <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
+                    Only Highly Targeted
+                    <br />
+                    Specialists
+                  </h2>
+                </div>
+
+                <Link
+                  href="/register"
+                  className="inline-block px-8 py-3 rounded-full bg-blue-500 text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 transform transition-all"
+                >
+                  Request a Demo
+                </Link>
+
+                {/* Specialty tags */}
+                <div className="flex flex-wrap gap-2 pt-4">
+                  {specialties.map((specialty, index) => (
+                    <span
+                      key={specialty.name}
+                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium border shadow-sm ${
+                        specialty.color === 'accent'
+                          ? 'bg-blue-100 border-blue-200'
+                          : 'bg-white border-gray-200'
+                      }`}
+                      style={{
+                        opacity: isVisible ? 1 : 0,
+                        transform: isVisible ? 'scale(1)' : 'scale(0.9)',
+                        transition: `all 0.5s ease-out ${0.7 + index * 0.1}s`
+                      }}
+                    >
+                      {specialty.name}
+                      {specialty.hasIcon && (
+                        <span className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+                          <ArrowUpRight className="w-3 h-3 text-blue-500" />
+                        </span>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Center - Doctor Image */}
+              <div
+                className="flex justify-center"
+                style={{
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? 'translateY(0)' : 'translateY(40px)',
+                  transition: 'all 0.8s ease-out 0.5s'
+                }}
+              >
+                <div className="relative">
+                  <div className="w-72 lg:w-80 xl:w-96 aspect-[3/4] rounded-3xl overflow-hidden bg-gray-200">
+                    <Image
+                      src="/assets/doc-2.png"
+                      alt="Professional doctor"
+                      width={384}
+                      height={512}
+                      className="w-full h-full object-cover object-top"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Right - Telehealth Card */}
+              <div
+                className="hidden lg:block"
+                style={{
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible ? 'translateX(0)' : 'translateX(30px)',
+                  transition: 'all 0.7s ease-out 0.7s'
+                }}
+              >
+                <TelehealthCard />
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Features Section */}
+      <section id="product" className="py-20 lg:py-28" style={{ backgroundColor: 'hsl(150, 15%, 95%)' }}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          {/* Section Header */}
+          <div className="max-w-2xl mb-16">
+            <span className="inline-block px-4 py-1.5 rounded-full bg-white border border-gray-200 text-sm font-medium text-gray-600 mb-4">
+              Platform Features
+            </span>
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+              MODERN HEALTHCARE
+              <br />
+              <span className="text-gray-600">AT YOUR FINGERTIPS</span>
+            </h2>
+          </div>
+
+          {/* Bento Grid */}
+          <div className="grid lg:grid-cols-3 gap-5">
+            {/* Large feature card - Video Consultations */}
+            <div className="lg:col-span-2 bg-white rounded-3xl p-6 lg:p-8 border border-gray-200 shadow-md group hover:shadow-lg transition-shadow">
+              <div className="flex flex-col lg:flex-row gap-6">
+                <div className="flex-1">
+                  <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center mb-6">
+                    <Video className="w-7 h-7 text-blue-500" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                    HD Video Consultations
+                  </h3>
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    Crystal-clear video calls with screen sharing and recording.
+                    Enterprise-grade infrastructure ensures reliable connections.
+                  </p>
+                  <Link
+                    href="/register"
+                    className="inline-flex items-center gap-2 text-sm font-medium text-gray-900 group-hover:text-blue-500 transition-colors"
+                  >
+                    Learn more
+                    <ArrowUpRight className="w-4 h-4" />
+                  </Link>
+                </div>
+                <div className="flex-1 rounded-2xl overflow-hidden bg-gray-100">
+                  <Image
+                    src="/assets/doc.jpg"
+                    alt="Video consultation"
+                    width={400}
+                    height={300}
+                    className="w-full h-48 lg:h-full object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Stats card */}
+            <div className="bg-gray-800 text-white rounded-3xl overflow-hidden shadow-md">
+              <Image
+                src="/assets/wait-time.jpeg"
+                alt="Average wait time"
+                width={400}
+                height={500}
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            {/* Appointment booking */}
+            <div className="bg-white rounded-3xl p-6 lg:p-8 border border-gray-200 shadow-md">
+              <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center mb-5">
+                <Calendar className="w-6 h-6 text-blue-500" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                Easy Scheduling
+              </h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Browse available slots, choose your specialist, and book in seconds.
+                Automated reminders keep you on track.
+              </p>
+            </div>
+
+            {/* AI Health Assistant */}
+            <div className="bg-blue-500 text-white rounded-3xl p-6 lg:p-8">
+              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center mb-5">
+                <Bot className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">
+                AI Health Assistant
+              </h3>
+              <p className="text-sm opacity-90 leading-relaxed">
+                24/7 symptom analysis powered by Google Gemini. Get personalized
+                health insights and recommendations anytime.
+              </p>
+            </div>
+
+            {/* Security card with image */}
+            <div className="bg-white rounded-3xl p-6 lg:p-8 border border-gray-200 shadow-md">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
+                  <Shield className="w-6 h-6 text-gray-900" />
+                </div>
+                <span className="px-3 py-1 rounded-full bg-gray-100 text-xs font-medium text-gray-600">
+                  HIPAA Compliant
+                </span>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                Secure & Private
+              </h3>
+              <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                Enterprise-grade encryption protects your health data.
+              </p>
+              <div className="rounded-2xl overflow-hidden">
                 <Image
-                  src="/assets/images/onboarding-img.png"
-                  alt="Healthcare Team"
-                  fill
-                  className="object-contain"
-                  priority
+                  src="/assets/doctor-tablet.png"
+                  alt="Secure platform"
+                  width={300}
+                  height={128}
+                  className="w-full h-32 object-cover"
                 />
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Features Section */}
-        <section className="py-20 bg-gray-50 dark:bg-gray-900">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                Why Choose LifeLink?
-              </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                We're revolutionizing healthcare access in Jamaica with cutting-edge technology
-              </p>
+      {/* How It Works Section */}
+      <section id="services" className="py-20 lg:py-28 bg-white">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              A few steps on the way to health
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                1
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Register</h3>
+              <p className="text-gray-600 text-sm">Create your account in minutes</p>
             </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {/* Feature 1 */}
-              <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-6">
-                  <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-                  Easy Appointment Booking
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Schedule appointments with top healthcare providers in minutes, not hours
-                </p>
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                2
               </div>
-
-              {/* Feature 2 */}
-              <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-6">
-                  <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-                  Secure & Private
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Your health data is encrypted and protected with enterprise-grade security
-                </p>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Book or Instant Consult</h3>
+              <p className="text-gray-600 text-sm">Schedule or connect immediately</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-blue-500 text-white flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                3
               </div>
-
-              {/* Feature 3 */}
-              <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-6">
-                  <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-                  AI-Powered Insights
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Get personalized health recommendations powered by artificial intelligence
-                </p>
-              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Video Consultation</h3>
+              <p className="text-gray-600 text-sm">Connect with your doctor</p>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* CTA Section */}
-        <section className="py-20 bg-white dark:bg-gray-800">
-          <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-6">
-              Ready to Take Control of Your Health?
+      {/* CTA Section */}
+      <section className="py-20 lg:py-28" style={{ backgroundColor: 'hsl(150, 15%, 95%)' }}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+              Start Your Healthcare Journey Today
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+            <p className="text-lg text-gray-600 mb-8">
               Join thousands of Jamaicans who trust LifeLink for their healthcare needs
             </p>
-            <Link
-              href="/register"
-              className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-lg font-semibold transition-colors shadow-lg text-lg"
-            >
-              Create Free Account
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/register"
+                className="px-10 py-4 rounded-full bg-blue-500 text-white font-semibold text-lg shadow-lg hover:shadow-xl hover:scale-105 transform transition-all"
+              >
+                Get Started
+              </Link>
+              <Link
+                href="/login"
+                className="px-10 py-4 rounded-full bg-white text-gray-900 font-semibold text-lg border-2 border-gray-200 hover:border-gray-300 transition-all"
+              >
+                Sign In
+              </Link>
+            </div>
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 dark:bg-black text-gray-300 border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid md:grid-cols-4 gap-8">
-            {/* Column 1 - About */}
-            <div>
-              <Image
-                src="/assets/logo.svg"
-                height={40}
-                width={150}
-                alt="LifeLink Logo"
-                className="h-8 w-auto mb-4 brightness-0 invert"
-              />
-              <p className="text-sm text-gray-400">
-                Revolutionizing healthcare access in Jamaica through innovative technology.
-              </p>
+      <footer className="bg-gray-900 text-gray-400 py-12">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center">
+                <Heart className="w-4 h-4 text-gray-900" fill="currentColor" />
+              </div>
+              <span className="text-xl font-bold text-white">LifeLink</span>
             </div>
-
-            {/* Column 2 - Quick Links */}
-            <div>
-              <h3 className="font-semibold text-white mb-4">Quick Links</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/login" className="hover:text-blue-400 transition-colors">
-                    Login
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/register" className="hover:text-blue-400 transition-colors">
-                    Sign Up
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/?admin=true" className="hover:text-blue-400 transition-colors">
-                    Admin Portal
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Column 3 - Support */}
-            <div>
-              <h3 className="font-semibold text-white mb-4">Support</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <a href="#" className="hover:text-blue-400 transition-colors">
-                    Help Center
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-blue-400 transition-colors">
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-blue-400 transition-colors">
-                    Terms of Service
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Column 4 - Contact */}
-            <div>
-              <h3 className="font-semibold text-white mb-4">Contact Us</h3>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  support@lifelink.jm
-                </li>
-                <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  1-876-XXX-XXXX
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Bottom Bar */}
-          <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-400">
-              © 2025 LifeLink. All rights reserved.
-            </p>
-            <div className="flex gap-4">
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                </svg>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/>
-                </svg>
-              </a>
+            <div className="text-center text-sm">
+              © 2026 LifeLink. Built for Sagicor Innovation Challenge
             </div>
           </div>
         </div>
       </footer>
+
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-15px) rotate(3deg);
+          }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+        .animate-float-delayed {
+          animation: float 6s ease-in-out infinite;
+          animation-delay: 2s;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+// Telehealth bento card component
+const TelehealthCard = () => {
+  return (
+    <div className="bg-white rounded-3xl p-5 shadow-md border border-gray-200">
+      {/* Image grid */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="space-y-3">
+          <div className="bg-gray-100 rounded-2xl p-4">
+            <div className="text-xs text-gray-600 mb-1">Satisfaction</div>
+            <div className="text-2xl font-bold text-gray-900">80%</div>
+            <div className="text-xs text-gray-600">Successful diagnosis</div>
+          </div>
+          <div className="bg-blue-100 rounded-2xl p-3 text-gray-900">
+            <div className="text-xs font-medium">Well-being</div>
+            <div className="text-sm font-semibold mt-1">Mental Health Support</div>
+          </div>
+        </div>
+        <div className="bg-gray-100 rounded-2xl overflow-hidden">
+          <Image
+            src="/assets/doctor-portrait.png"
+            alt="Healthcare"
+            width={200}
+            height={200}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      </div>
+
+      {/* Telehealth Solution label */}
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h3 className="font-bold text-gray-900">Telehealth Solution</h3>
+          <Link
+            href="/register"
+            className="inline-flex items-center gap-1 mt-2 px-4 py-2 rounded-full bg-blue-500 text-white text-xs font-semibold hover:bg-blue-600 transition-colors"
+          >
+            Explore <ArrowUpRight className="w-3 h-3" />
+          </Link>
+        </div>
+        <span className="px-3 py-1 rounded-full bg-white border border-gray-200 text-xs font-medium text-gray-700">
+          About
+        </span>
+      </div>
+
+      <p className="text-xs text-gray-600">
+        Our platform connects you with trusted healthcare professionals.
+      </p>
+
+      {/* Bottom row */}
+      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+        <span className="text-xs text-gray-600">A few steps on the way to health</span>
+        <div className="flex gap-2">
+          <span className="w-6 h-6 rounded-full bg-gray-200" />
+          <span className="w-6 h-6 rounded-full bg-blue-400" />
+        </div>
+      </div>
     </div>
   );
 };
