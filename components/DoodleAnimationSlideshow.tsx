@@ -176,13 +176,13 @@ const DoodleAnimationSlideshow: React.FC<DoodleAnimationSlideshowProps> = ({
         ))}
       </div>
 
-      <Button
+      {/* <Button
         onClick={handleSkip}
         variant="ghost"
         className="absolute right-8 top-8 text-white hover:bg-white/20"
       >
         Skip
-      </Button>
+      </Button> */}
     </div>
   );
 };
