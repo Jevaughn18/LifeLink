@@ -6,36 +6,46 @@
 
 📖 Overview
 
-A healthcare patient management application that allows patients to easily register, book, and manage their appointments with doctors, featuring administrative tools for scheduling, confirming, and canceling appointments, along with SMS notifications, all built using Next.js.
+A comprehensive healthcare patient management application that allows patients to easily register, book, and manage their appointments with doctors. Features include administrative tools for scheduling, confirming, and canceling appointments, email notifications, video consultations, AI-powered insights, and secure JWT-based authentication, all built using Next.js.
 
 ⚙️ Tech Stack
-Next.js
-Appwrite
-Typescript
-TailwindCSS
-ShadCN
-Twilio
+- **Frontend:** Next.js 14 (App Router), TypeScript, TailwindCSS, ShadCN UI
+- **Database:** MySQL
+- **Authentication:** JWT (jose library), HTTP-only cookies
+- **Email:** Gmail SMTP (Nodemailer)
+- **Video Calls:** Stream.io Video SDK
+- **AI Integration:** Google Gemini (via OpenRouter)
+- **API Integration:** Sagicor Intelligence Platform
 
 🔋 Features
-👉 Register as a Patient: Users can sign up and create a personal profile as a patient.
 
-👉 Book a New Appointment with Doctor: Patients can schedule appointments with doctors at their convenience and can book multiple appointments.
+**Patient Features:**
+- Register with email verification (6-digit code)
+- Secure login with JWT authentication and 24-hour session persistence
+- Book appointments with doctors at their convenience
+- Schedule multiple appointments
+- Receive email notifications for appointment confirmations and cancellations
+- Video consultation capabilities
 
-👉 Manage Appointments on Admin Side: Administrators can efficiently view and handle all scheduled appointments.
+**Admin Features:**
+- Dashboard to view and manage all scheduled appointments
+- Confirm/schedule appointments with automated email notifications
+- Cancel appointments with cancellation reason tracking
+- Admin-only access protected by passkey authentication
 
-👉 Confirm/Schedule Appointment from Admin Side: Admins can confirm and set appointment times to ensure they are properly scheduled.
+**Security & Authentication:**
+- JWT-based authentication with HTTP-only cookies
+- Middleware-based route protection
+- Secure session management (24-hour expiry)
+- Password hashing with bcrypt
+- Email verification system
 
-👉 Cancel Appointment from Admin Side: Administrators have the ability to cancel any appointment as needed.
-
-👉 Send SMS on Appointment Confirmation: Patients receive SMS notifications to confirm their appointment details.
-
-👉 Complete Responsiveness: The application works seamlessly on all device types and screen sizes.
-
-👉 File Upload Using Appwrite Storage: Users can upload and store files securely within the app using Appwrite storage services.
-
-👉 Manage and Track Application Performance Using Sentry: The application uses Sentry to monitor and track its performance and detect any errors.
-
-and many more, including code architecture and reusability
+**Additional Features:**
+- Complete responsiveness across all device types and screen sizes
+- AI-powered insights using Google Gemini
+- Integration with Sagicor Intelligence Platform
+- Video calling powered by Stream.io
+- Clean code architecture with reusability and maintainability
 
 🤸 Quick Start
 Follow these steps to set up the project locally on your machine.
@@ -58,24 +68,76 @@ Install the project dependencies using npm:
 npm install
 Set Up Environment Variables
 
-Create a new file named .env.local in the root of your project and add the following content:
+Create a new file named `.env` in the root of your project and add the following content:
 
-#APPWRITE
-NEXT_PUBLIC_ENDPOINT=https://cloud.appwrite.io/v1
-PROJECT_ID=
-API_KEY=
-DATABASE_ID=
-PATIENT_COLLECTION_ID=
-APPOINTMENT_COLLECTION_ID=
-NEXT_PUBLIC_BUCKET_ID=
+```bash
+# Admin Authentication
+NEXT_PUBLIC_ADMIN_PASSKEY=your_admin_passkey_here
 
-NEXT_PUBLIC_ADMIN_PASSKEY=111111
-Replace the placeholder values with your actual Appwrite credentials. You can obtain these credentials by signing up on the Appwrite website.
+# JWT Secret (generate a secure random string)
+JWT_SECRET=your_jwt_secret_here
+
+# MySQL Database Configuration
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=your_mysql_password
+MYSQL_DATABASE=lifelink_db
+
+# Gmail SMTP Configuration for Email Verification
+# IMPORTANT: Use Gmail App Password, not your regular password
+# To get an App Password:
+# 1. Go to your Google Account settings
+# 2. Security → 2-Step Verification (must be enabled)
+# 3. App Passwords → Generate new app password
+GMAIL_USER=your_email@gmail.com
+GMAIL_APP_PASSWORD=your_16_char_app_password
+
+# AI Integration - Gemini via OpenRouter
+OPENROUTER_API_KEY_GEMINI=your_openrouter_api_key
+
+# Sagicor API Integration
+SAGICOR_API_KEY=your_sagicor_api_key
+
+# Stream.io Video SDK
+NEXT_PUBLIC_STREAM_API_KEY=your_stream_api_key
+STREAM_SECRET_KEY=your_stream_secret_key
+
+# Video Platform URL (where the video-platform Next.js app runs)
+NEXT_PUBLIC_VIDEO_PLATFORM_URL=http://localhost:3001
+```
+
+Replace the placeholder values with your actual credentials:
+- **MySQL:** Set up a local MySQL database named `lifelink_db`
+- **Gmail:** Enable 2FA and generate an App Password from your Google Account
+- **OpenRouter:** Sign up at [OpenRouter](https://openrouter.ai/) for Gemini API access
+- **Stream.io:** Create an account at [Stream.io](https://getstream.io/) for video functionality
+- **JWT_SECRET:** Generate a secure random string (e.g., using `openssl rand -hex 32`)
+
+Database Setup
+
+Set up your MySQL database:
+
+```bash
+# Create the database
+mysql -u root -p
+CREATE DATABASE lifelink_db;
+```
+
+The application will automatically create the required tables on first run.
 
 Running the Project
 
+```bash
 npm run dev
-Open http://localhost:3000 in your browser to view the project.
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser to view the project.
+
+**Project Structure:**
+- Main application runs on `http://localhost:3000`
+- Patient Dashboard submodule (if applicable)
+- Video platform runs on `http://localhost:3001` (separate Next.js app)
 
 
 👨‍💻 Author
